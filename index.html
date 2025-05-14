@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Mystère</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+
+        .gallery img {
+            width: 200px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        #secretButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            opacity: 0; /* Bouton invisible */
+            cursor: pointer;
+            z-index: 100;
+            border: none;
+            background: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Bienvenue sur le site des images téléchargeables</h1>
+    
+    <!-- Images téléchargeables -->
+    <div class="gallery">
+        <a href="1.jpg" download><img src="1.jpg" alt="Télécharger l'image 1"></a>
+        <a href="2.jpg" download><img src="2.jpg" alt="Télécharger l'image 2"></a>
+        <a href="3.jpg" download><img src="3.jpg" alt="Télécharger l'image 3"></a>
+        <a href="4.jpg" download><img src="4.jpg" alt="Télécharger l'image 3"></a>
+        <a href="5.jpg" download><img src="5.jpg" alt="Télécharger l'image 3"></a>
+    </div>
+
+    <!-- Bouton caché -->
+    <button id="secretButton"></button>
+
+    <script>
+        document.getElementById("secretButton").addEventListener("click", function() {
+            window.location.href = "secret.html";
+        });
+    </script>
+
+</body>
+</html>
