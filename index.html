@@ -34,19 +34,19 @@
 <body>
 
     <h1>Bienvenue sur le site des images téléchargeables</h1>
-    
-    <!-- Images téléchargeables -->
+
     <div class="gallery">
         <a href="1.jpg" download><img src="1.jpg" alt="Télécharger l'image 1"></a>
         <a href="2.jpg" download><img src="2.jpg" alt="Télécharger l'image 2"></a>
         <a href="3.jpg" download><img src="3.jpg" alt="Télécharger l'image 3"></a>
-        <a href="4.jpg" download><img src="4.jpg" alt="Télécharger l'image 3"></a>
-        <a href="5.jpg" download><img src="5.jpg" alt="Télécharger l'image 3"></a>
+        <a href="4.jpg" download><img src="4.jpg" alt="Télécharger l'image 4"></a>
+        <a href="5.jpg" download><img src="5.jpg" alt="Télécharger l'image 5"></a>
     </div>
 
     <!-- Bouton caché -->
     <button id="secretButton"></button>
 
+    <script src="secret.js"></script> <!-- Protection activée -->
     <script>
         document.getElementById("secretButton").addEventListener("click", function() {
             window.location.href = "secret.html";
