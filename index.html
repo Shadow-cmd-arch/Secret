@@ -3,48 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Mystère</title>
+    <title>TechSecure - Sécurité & Confidentialité</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header {
+            background: #222;
+            color: white;
+            padding: 15px 0;
+            font-size: 24px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .gallery img {
-            width: 200px;
+            width: 180px;
             margin: 10px;
             cursor: pointer;
+            border-radius: 10px;
+            transition: 0.3s;
         }
 
-        #secretButton {
+        .gallery img:hover {
+            transform: scale(1.1);
+        }
+
+        .hidden-button {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 50px;
-            height: 50px;
-            opacity: 0; /* Bouton invisible */
+            top: 5px;
+            right: 5px;
+            width: 20px; /* Plus petit */
+            height: 20px;
+            opacity: 0;
             cursor: pointer;
             z-index: 100;
             border: none;
             background: none;
         }
+
+        footer {
+            background: #222;
+            color: white;
+            padding: 10px 0;
+            font-size: 14px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Bienvenue sur le site des images téléchargeables</h1>
+    <header>🔒 TechSecure - Votre Sécurité, Notre Priorité 🔒</header>
 
-    <div class="gallery">
-        <a href="1.jpg" download><img src="1.jpg" alt="Télécharger l'image 1"></a>
-        <a href="2.jpg" download><img src="2.jpg" alt="Télécharger l'image 2"></a>
-        <a href="3.jpg" download><img src="3.jpg" alt="Télécharger l'image 3"></a>
-        <a href="4.jpg" download><img src="4.jpg" alt="Télécharger l'image 4"></a>
-        <a href="5.jpg" download><img src="5.jpg" alt="Télécharger l'image 5"></a>
+    <div class="container">
+        <h2>Bienvenue sur TechSecure</h2>
+        <p>Nous vous aidons à protéger votre vie numérique grâce aux meilleures stratégies de cybersécurité. Découvrez nos conseils et téléchargez nos outils.</p>
+
+        <h3>🖼️ Galerie d'outils</h3>
+        <p>Cliquez sur une image pour télécharger l'outil correspondant :</p>
+
+        <div class="gallery">
+            <a href="1.jpg" download><img src="1.jpg" alt="Télécharger l'image 1"></a>
+            <a href="2.jpg" download><img src="2.jpg" alt="Télécharger l'image 2"></a>
+            <a href="3.jpg" download><img src="3.jpg" alt="Télécharger l'image 3"></a>
+            <a href="4.jpg" download><img src="4.jpg" alt="Télécharger l'image 4"></a>
+            <a href="5.jpg" download><img src="5.jpg" alt="Télécharger l'image 5"></a>
+        </div>
     </div>
 
-    <!-- Bouton caché -->
-    <button id="secretButton"></button>
+    <!-- Bouton caché plus petit -->
+    <button class="hidden-button" id="secretButton"></button>
+
+    <footer>© 2025 TechSecure - Sécurisation avancée du web</footer>
 
     <script src="secret.js"></script> <!-- Protection activée -->
     <script>
