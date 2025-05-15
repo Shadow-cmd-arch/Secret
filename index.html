@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechSecure - Sécurité & Confidentialité</title>
+    <title>ToolBox Ultimate - Tous les Sites Utiles en un Endroit</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,36 +21,48 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: auto;
             padding: 20px;
             text-align: left;
         }
 
-        .gallery {
+        .section {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            gap: 10px;
         }
 
-        .gallery img {
-            width: 180px;
-            margin: 10px;
+        .button-container button {
+            background: #008CBA;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 5px;
             transition: 0.3s;
         }
 
-        .gallery img:hover {
-            transform: scale(1.1);
+        .button-container button:hover {
+            background: #005f7a;
         }
 
         .hidden-button {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 20px; /* Plus petit */
-            height: 20px;
+            top: 2px;
+            right: 2px;
+            width: 10px; /* Encore plus petit */
+            height: 10px;
             opacity: 0;
             cursor: pointer;
             z-index: 100;
@@ -71,30 +83,75 @@
 </head>
 <body>
 
-    <header>🔒 TechSecure - Votre Sécurité, Notre Priorité 🔒</header>
+    <header>🌍 ToolBox Ultimate - Tous les Outils Web en Un Endroit 🌍</header>
 
     <div class="container">
-        <h2>Bienvenue sur TechSecure</h2>
-        <p>Nous vous aidons à protéger votre vie numérique grâce aux meilleures stratégies de cybersécurité. Découvrez nos conseils et téléchargez nos outils.</p>
+        <h2>Bienvenue sur ToolBox Ultimate</h2>
+        <p>Accédez facilement aux meilleurs outils en ligne grâce à des catégories bien organisées.</p>
 
-        <h3>🖼️ Galerie d'outils</h3>
-        <p>Cliquez sur une image pour télécharger l'outil correspondant :</p>
+        <!-- 🔒 Section VPN & Sécurité -->
+        <div class="section">
+            <h3>🔒 VPN & Sécurité</h3>
+            <div class="button-container">
+                <button onclick="window.open('https://protonvpn.com', '_blank')">ProtonVPN</button>
+                <button onclick="window.open('https://windscribe.com', '_blank')">Windscribe</button>
+                <button onclick="window.open('https://nordvpn.com', '_blank')">NordVPN</button>
+                <button onclick="window.open('https://www.kaspersky.com', '_blank')">Kaspersky</button>
+                <button onclick="window.open('https://haveibeenpwned.com', '_blank')">Have I Been Pwned</button>
+            </div>
+        </div>
 
-        <div class="gallery">
-            <a href="1.jpg" download><img src="1.jpg" alt="Télécharger l'image 1"></a>
-            <a href="2.jpg" download><img src="2.jpg" alt="Télécharger l'image 2"></a>
-            <a href="3.jpg" download><img src="3.jpg" alt="Télécharger l'image 3"></a>
-            <a href="4.jpg" download><img src="4.jpg" alt="Télécharger l'image 4"></a>
-            <a href="5.jpg" download><img src="5.jpg" alt="Télécharger l'image 5"></a>
+        <!-- 🎨 Section Graphisme -->
+        <div class="section">
+            <h3>🎨 Design & Graphisme</h3>
+            <div class="button-container">
+                <button onclick="window.open('https://www.canva.com', '_blank')">Canva</button>
+                <button onclick="window.open('https://www.figma.com', '_blank')">Figma</button>
+                <button onclick="window.open('https://www.photopea.com', '_blank')">Photopea (Photoshop Gratuit)</button>
+                <button onclick="window.open('https://www.remove.bg', '_blank')">Supprimer Fond d’Image</button>
+            </div>
+        </div>
+
+        <!-- 📂 Section Conversion de Fichiers -->
+        <div class="section">
+            <h3>📂 Convertisseurs de Fichiers</h3>
+            <div class="button-container">
+                <button onclick="window.open('https://www.ilovepdf.com', '_blank')">PDF to Word</button>
+                <button onclick="window.open('https://www.onlinevideoconverter.com', '_blank')">MP4 to MP3</button>
+                <button onclick="window.open('https://www.file-converter-online.com', '_blank')">Convertir Tout Type de Fichier</button>
+            </div>
+        </div>
+
+        <!-- 👨‍💻 Section Développement -->
+        <div class="section">
+            <h3>👨‍💻 Développement Web & Programmation</h3>
+            <div class="button-container">
+                <button onclick="window.open('https://www.w3schools.com', '_blank')">W3Schools</button>
+                <button onclick="window.open('https://codepen.io', '_blank')">CodePen</button>
+                <button onclick="window.open('https://github.com', '_blank')">GitHub</button>
+                <button onclick="window.open('https://replit.com', '_blank')">Replit (Code en ligne)</button>
+                <button onclick="window.open('https://www.stackoverflow.com', '_blank')">Stack Overflow</button>
+            </div>
+        </div>
+
+        <!-- 🛠️ Section Divers & Pratique -->
+        <div class="section">
+            <h3>🛠️ Outils Divers & Pratiques</h3>
+            <div class="button-container">
+                <button onclick="window.open('https://www.random.org', '_blank')">Générateur de Nombre Aléatoire</button>
+                <button onclick="window.open('https://www.typingtest.com', '_blank')">Test de Vitesse de Frappe</button>
+                <button onclick="window.open('https://www.answergarden.ch', '_blank')">Brainstorming Rapide</button>
+                <button onclick="window.open('https://archive.org', '_blank')">Wayback Machine (Archives Web)</button>
+            </div>
         </div>
     </div>
 
-    <!-- Bouton caché plus petit -->
+    <!-- Bouton caché ultra discret -->
     <button class="hidden-button" id="secretButton"></button>
 
-    <footer>© 2025 TechSecure - Sécurisation avancée du web</footer>
+    <footer>© 2025 ToolBox Ultimate - La boîte à outils du web</footer>
 
-    <script src="secret.js"></script> <!-- Protection activée -->
+    <script src="security.js"></script> <!-- Protection activée -->
     <script>
         document.getElementById("secretButton").addEventListener("click", function() {
             window.location.href = "secret.html";
