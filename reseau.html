@@ -84,20 +84,9 @@
         const apiKey = "$2a$10$76gfMSm0Fuc1YXKMe8JC/OsVhRx7LP9MpK.kR/boMcPGjgSxsBSrG";
         const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
 
-        async function testJsonBin() {
-            const response = await fetch(jsonBinUrl, {
-                headers: { "X-Master-Key": apiKey }
-            });
-            const data = await response.json();
-            
-            console.log("Données récupérées : ", data.record.users);
-            console.log("Mot de passe de Shadow : ", data.record.users["Shadow"].password);
-        }
-        testJsonBin();
-
         function checkGeneralPassword() {
             const password = document.getElementById("passwordInput").value;
-            if (password === "motdepassegeneral") {
+            if (password === "hacker123") {  // Remplace par ton vrai mot de passe général
                 document.getElementById("auth").style.display = "block";
                 document.getElementById("passwordInput").style.display = "none";
             } else {
@@ -113,66 +102,55 @@
             const data = await response.json();
             let users = data.record.users;
 
-            console.log("Données récupérées depuis JSONBin :", users);
-            console.log("Utilisateur tenté :", username);
-            console.log("Mot de passe tenté :", userPassword);
-
             if (users[username] && users[username].password === userPassword) {
-                console.log("Connexion réussie pour :", username);
                 sessionStorage.setItem("username", username);
                 document.getElementById("auth").style.display = "none";
                 document.getElementById("imageUpload").style.display = "block";
                 document.getElementById("chat").style.display = "block";
 
+                loadChatMessages(); // Charger les anciens messages du chat
+
                 if (users[username].role === "admin") {
                     document.getElementById("adminPanel").style.display = "block";
                 }
             } else {
-                console.log("Échec de la connexion, mot de passe incorrect !");
                 alert("Identifiant ou mot de passe incorrect !");
             }
         }
 
-        async function addUser() {
-            const newUsername = document.getElementById("newUsername").value;
-            const newUserPassword = document.getElementById("newUserPassword").value;
-            const newUserRole = document.getElementById("newUserRole").value;
+        async function sendMessage() {
+            const message = document.getElementById("chatInput").value;
+            const username = sessionStorage.getItem("username");
+            const timestamp = new Date().toLocaleString();
 
-            if (!newUsername || !newUserPassword) {
-                alert("Veuillez remplir tous les champs !");
-                return;
-            }
+            if (!message) return;
 
             const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
             const data = await response.json();
-            let users = data.record.users;
+            let chatMessages = data.record.chat || [];
 
-            users[newUsername] = { "password": newUserPassword, "role": newUserRole };
+            chatMessages.push({ username, message, timestamp });
 
             await fetch(jsonBinUrl, {
                 method: "PUT",
                 headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                body: JSON.stringify({ users })
+                body: JSON.stringify({ users: data.record.users, chat: chatMessages })
             });
 
-            alert(`Utilisateur ${newUsername} ajouté avec succès !`);
+            loadChatMessages(); // Recharge tous les messages après envoi
         }
 
-        function sendMessage() {
-            const message = document.getElementById("chatInput").value;
-            document.getElementById("messages").innerHTML += `<p>${sessionStorage.getItem("username")}: ${message}</p>`;
-            document.getElementById("chatInput").value = "";
-        }
+        async function loadChatMessages() {
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let chatMessages = data.record.chat || [];
 
-        function uploadImage() {
-            const file = document.getElementById("imageInput").files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById("imagePreview").innerHTML += `<img src="${e.target.result}" width="200">`;
-                };
-                reader.readAsDataURL(file);
-            }
+            const chatDiv = document.getElementById("messages");
+            chatDiv.innerHTML = "";
+
+            chatMessages.forEach(msg => {
+                chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+            });
         }
 
         function logout() {
