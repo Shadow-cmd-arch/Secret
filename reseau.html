@@ -3,42 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compte Privé</title>
+    <title>Réseau Secret</title>
     <style>
         body {
             background-color: black;
             color: #00ff00;
             font-family: 'Courier New', monospace;
-            margin: 0;
-            padding: 0;
             text-align: center;
-        }
-        .navbar {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 15px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            display: none; /* Le menu est masqué par défaut */
-            justify-content: space-evenly; /* Répartition uniforme des boutons */
-            align-items: center;
-            height: 50px;
-            border-bottom: 2px solid #00ff00;
-        }
-        .navbar button {
-            background: #00ff00;
-            color: black;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 14px;
-            border-radius: 5px;
-            width: 150px;
+            padding-top: 20vh;
         }
         .container {
-            padding-top: 80px;
-            text-align: center;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 0, 0, 0.8);
         }
         button {
             background: #00ff00;
@@ -48,43 +27,19 @@
             font-family: inherit;
             cursor: pointer;
             margin-top: 10px;
-            border-radius: 5px;
         }
-        #auth, #adminPanel, #chat, #fileUpload, #userList {
+        #auth, #adminPanel, #chat, #imageUpload {
             display: none;
-        }
-        #usernameDisplay {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        #passwordScreen {
-            margin-top: 20vh;
         }
     </style>
 </head>
 <body>
-
-    <!-- Écran de mot de passe initial -->
-    <div id="passwordScreen">
-        <h1>Accès Privé</h1>
-        <p>Entrez votre mot de passe pour accéder :</p>
-        <input type="password" id="initialPassword">
-        <button onclick="validateInitialPassword()">Valider</button>
-    </div>
-
-    <!-- Menu en haut -->
-    <div class="navbar" id="navbar">
-        <p id="usernameDisplay"></p>
-        <button onclick="toggleSection('chat')">💬 Chat</button>
-        <button onclick="toggleSection('fileUpload')">📁 Ajouter un fichier</button>
-        <div id="adminTools" style="display: none;">
-            <button onclick="toggleSection('adminPanel')">➕ Gérer les membres</button>
-            <button onclick="toggleSection('userList')">🔍 Voir les connectés</button>
-        </div>
-        <button onclick="logout()">🚪 Déconnexion</button>
-    </div>
-
     <div class="container">
+        <h1>Accès Restreint</h1>
+        <p>Entrez le mot de passe général :</p>
+        <input type="password" id="passwordInput">
+        <button onclick="checkGeneralPassword()">Valider</button>
+
         <!-- Formulaire d'identification -->
         <div id="auth">
             <p>Identifiez-vous :</p>
@@ -95,7 +50,8 @@
 
         <!-- Interface Admin -->
         <div id="adminPanel">
-            <h2>Gestion des utilisateurs</h2>
+            <h2>Panel Administrateur</h2>
+            <h3>Ajouter un nouvel utilisateur :</h3>
             <input type="text" id="newUsername" placeholder="Identifiant">
             <input type="password" id="newUserPassword" placeholder="Mot de passe">
             <select id="newUserRole">
@@ -103,7 +59,6 @@
                 <option value="admin">Administrateur</option>
             </select>
             <button onclick="addUser()">Ajouter</button>
-            <button onclick="removeUser()">Supprimer un membre</button>
         </div>
 
         <!-- Chat -->
@@ -114,31 +69,26 @@
             <button onclick="sendMessage()">Envoyer</button>
         </div>
 
-        <!-- Ajout de fichiers -->
-        <div id="fileUpload">
-            <h3>Partager un fichier</h3>
-            <input type="file" id="fileInput">
-            <button onclick="uploadFile()">Télécharger</button>
-            <div id="fileList"></div>
+        <!-- Téléchargement d'images -->
+        <div id="imageUpload">
+            <h3>Partager une image</h3>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="uploadImage()">Télécharger</button>
+            <div id="imagePreview"></div>
         </div>
 
-        <!-- Liste des utilisateurs connectés -->
-        <div id="userList">
-            <h3>Utilisateurs connectés</h3>
-            <ul id="connectedUsers"></ul>
-        </div>
+        <button onclick="logout()">Déconnexion</button>
     </div>
 
     <script>
         const apiKey = "$2a$10$z13GMKB7jJxMtSbReUV/E.0Ldiv.VCBqVrvecBeRqkDM6IrLA4G8m";
         const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
-        const initialPassword = "hacker123"; // Mot de passe à vérifier
 
-        function validateInitialPassword() {
-            const inputPassword = document.getElementById("initialPassword").value;
-            if (inputPassword === initialPassword) {
-                document.getElementById("passwordScreen").style.display = "none";
+        function checkGeneralPassword() {
+            const password = document.getElementById("passwordInput").value;
+            if (password === "motdepassecorrect") {  // Remplace par ton vrai mot de passe général
                 document.getElementById("auth").style.display = "block";
+                document.getElementById("passwordInput").style.display = "none";
             } else {
                 alert("Mot de passe incorrect !");
             }
@@ -155,24 +105,52 @@
             if (users[username] && users[username].password === userPassword) {
                 sessionStorage.setItem("username", username);
                 document.getElementById("auth").style.display = "none";
+                document.getElementById("imageUpload").style.display = "block";
+                document.getElementById("chat").style.display = "block";
 
-                document.getElementById("usernameDisplay").innerHTML = `${username} (${users[username].role})`;
-                document.getElementById("navbar").style.display = "flex";
+                loadChatMessages(); // Charger les anciens messages du chat
 
                 if (users[username].role === "admin") {
-                    document.getElementById("adminTools").style.display = "block";
+                    document.getElementById("adminPanel").style.display = "block";
                 }
-
-                loadChatMessages();
-                loadConnectedUsers();
             } else {
                 alert("Identifiant ou mot de passe incorrect !");
             }
         }
 
-        function toggleSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            section.style.display = section.style.display === "block" ? "none" : "block";
+        async function sendMessage() {
+            const message = document.getElementById("chatInput").value;
+            const username = sessionStorage.getItem("username");
+            const timestamp = new Date().toLocaleString();
+
+            if (!message) return;
+
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let chatMessages = data.record.chat || [];
+
+            chatMessages.push({ username, message, timestamp });
+
+            await fetch(jsonBinUrl, {
+                method: "PUT",
+                headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ users: data.record.users, chat: chatMessages })
+            });
+
+            loadChatMessages(); // Recharge tous les messages après envoi
+        }
+
+        async function loadChatMessages() {
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let chatMessages = data.record.chat || [];
+
+            const chatDiv = document.getElementById("messages");
+            chatDiv.innerHTML = "";
+
+            chatMessages.forEach(msg => {
+                chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+            });
         }
 
         function logout() {
