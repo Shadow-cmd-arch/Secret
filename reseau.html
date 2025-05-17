@@ -313,7 +313,7 @@
 // Désactiver le clic droit
 document.addEventListener("contextmenu", event => event.preventDefault());
 
-// Désactiver l'inspecteur (F12, Ctrl+Shift+I, Ctrl+U)
+// Bloquer l'accès à l'inspecteur de code
 document.addEventListener("keydown", event => {
     if (
         event.key === "F12" || 
@@ -322,24 +322,18 @@ document.addEventListener("keydown", event => {
         (event.ctrlKey && event.key === "S")
     ) {
         event.preventDefault();
-        return false;
+        return false; // Bloque complètement sans afficher de message
     }
 });
 
-// Détection de l'ouverture des outils de développement
+// Détection avancée des outils de développement
 (function() {
-    const devtools = /./;
-    devtools.toString = function() { return "Détecté"; };
-
-    console.log("%cInspection bloquée !", "color: red; font-size: 50px; font-weight: bold;");
-
-    setInterval(() => {
-        if (window.console && (console.firebug || devtools.toString() === "Détecté")) {
-            alert("Inspection bloquée ! Fermez les outils de développement.");
-        }
-    }, 5000); // Vérifie toutes les 5 secondes pour éviter le spam
+    const devtools = new Image();
+    devtools.__defineGetter__('id', function() {
+        window.location.href = "about:blank"; // Redirige vers une page vide si DevTools sont détectés
+    });
+    console.log(devtools);
 })();
-
   </script>
 </body>
 </html>
