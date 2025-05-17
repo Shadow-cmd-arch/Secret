@@ -92,24 +92,18 @@
             const data = await response.json();
             let users = data.record.users;
 
-            console.log("Données récupérées depuis JSONBin :", users);
-            console.log("Utilisateur tenté :", username);
-            console.log("Mot de passe tenté :", userPassword);
-
             if (users[username] && users[username].password === userPassword) {
-                console.log("Connexion réussie pour :", username);
                 sessionStorage.setItem("username", username);
                 document.getElementById("auth").style.display = "none";
                 document.getElementById("imageUpload").style.display = "block";
                 document.getElementById("chat").style.display = "block";
 
-                loadChatMessages(); // Charger les anciens messages du chat
+                loadChatMessages(); // Charger les messages du chat
 
                 if (users[username].role === "admin") {
                     document.getElementById("adminPanel").style.display = "block";
                 }
             } else {
-                console.log("Échec de la connexion, mot de passe incorrect !");
                 alert("Identifiant ou mot de passe incorrect !");
             }
         }
