@@ -81,12 +81,12 @@
     </div>
 
     <script>
-        const apiKey = "$2a$10$z13GMKB7jJxMtSbReUV/E.0Ldiv.VCBqVrvecBeRqkDM6IrLA4G8m";
+        const apiKey = "$2a$10$76gfMSm0Fuc1YXKMe8JC/OsVhRx7LP9MpK.kR/boMcPGjgSxsBSrG";
         const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
 
         function checkGeneralPassword() {
             const password = document.getElementById("passwordInput").value;
-            if (password === "motdepassecorrect") {  // Remplace par ton vrai mot de passe général
+            if (password === "motdepassegeneral") {
                 document.getElementById("auth").style.display = "block";
                 document.getElementById("passwordInput").style.display = "none";
             } else {
@@ -100,15 +100,13 @@
 
             const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
             const data = await response.json();
-            let users = data.record.users;
+            let users = data.record;
 
             if (users[username] && users[username].password === userPassword) {
                 sessionStorage.setItem("username", username);
                 document.getElementById("auth").style.display = "none";
                 document.getElementById("imageUpload").style.display = "block";
                 document.getElementById("chat").style.display = "block";
-
-                loadChatMessages(); // Charger les anciens messages du chat
 
                 if (users[username].role === "admin") {
                     document.getElementById("adminPanel").style.display = "block";
@@ -118,45 +116,53 @@
             }
         }
 
-        async function sendMessage() {
-            const message = document.getElementById("chatInput").value;
-            const username = sessionStorage.getItem("username");
-            const timestamp = new Date().toLocaleString();
+        async function addUser() {
+            const newUsername = document.getElementById("newUsername").value;
+            const newUserPassword = document.getElementById("newUserPassword").value;
+            const newUserRole = document.getElementById("newUserRole").value;
 
-            if (!message) return;
+            if (!newUsername || !newUserPassword) {
+                alert("Veuillez remplir tous les champs !");
+                return;
+            }
 
             const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
             const data = await response.json();
-            let chatMessages = data.record.chat || [];
-
-            chatMessages.push({ username, message, timestamp });
+            let users = data.record;
+            users[newUsername] = { "password": newUserPassword, "role": newUserRole };
 
             await fetch(jsonBinUrl, {
                 method: "PUT",
                 headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                body: JSON.stringify({ users: data.record.users, chat: chatMessages })
+                body: JSON.stringify(users)
             });
 
-            loadChatMessages(); // Recharge tous les messages après envoi
+            alert(`Utilisateur ${newUsername} ajouté avec succès !`);
         }
 
-        async function loadChatMessages() {
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let chatMessages = data.record.chat || [];
+        function sendMessage() {
+            const message = document.getElementById("chatInput").value;
+            document.getElementById("messages").innerHTML += `<p>${sessionStorage.getItem("username")}: ${message}</p>`;
+            document.getElementById("chatInput").value = "";
+        }
 
-            const chatDiv = document.getElementById("messages");
-            chatDiv.innerHTML = "";
-
-            chatMessages.forEach(msg => {
-                chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
-            });
+        function uploadImage() {
+            const file = document.getElementById("imageInput").files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById("imagePreview").innerHTML += `<img src="${e.target.result}" width="200">`;
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function logout() {
             sessionStorage.removeItem("username");
             window.location.href = "index.html";
         }
+
+        fetchUser();
     </script>
 </body>
 </html>
