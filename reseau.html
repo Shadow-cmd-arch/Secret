@@ -28,7 +28,7 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        #auth, #adminPanel, #chat, #imageUpload {
+        #auth, #adminPanel, #chat, #imageUpload, #fileUpload {
             display: none;
         }
     </style>
@@ -62,7 +62,7 @@
             <input type="text" id="deleteUsername" placeholder="Identifiant">
             <button onclick="deleteUser()">Supprimer</button>
 
-            <h3>Supprimer tous les messages :</h3>
+            <h3>Supprimer tous les messages (Admin uniquement) :</h3>
             <button onclick="deleteAllMessages()">Effacer le chat</button>
         </div>
 
@@ -73,29 +73,19 @@
             <button onclick="sendMessage()">Envoyer</button>
         </div>
 
-        <div id="imageUpload">
-            <h3>Partager une image</h3>
-            <input type="file" id="imageInput" accept="image/*">
-            <button onclick="uploadImage()">Télécharger</button>
-            <div id="imagePreview"></div>
+        <div id="fileUpload">
+            <h3>Partager un fichier</h3>
+            <input type="file" id="fileInput">
+            <button onclick="uploadFile()">Télécharger</button>
+            <div id="fileList"></div>
         </div>
 
         <button onclick="logout()">Déconnexion</button>
     </div>
 
     <script>
-        const apiKey = "$2a$10$76gfMSm0Fuc1YXKMe8JC/OsVhRx7LP9MpK.kR/boMcPGjgSxsBSrG";
-        const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
-
-        function checkGeneralPassword() {
-            const password = document.getElementById("passwordInput").value;
-            if (password === "hacker123") {
-                document.getElementById("auth").style.display = "block";
-                document.getElementById("passwordInput").style.display = "none";
-            } else {
-                alert("Mot de passe incorrect !");
-            }
-        }
+        const apiKey = "<TON_API_KEY>";
+        const jsonBinUrl = "<TON_URL_BIN>";
 
         async function checkCredentials() {
             try {
@@ -112,6 +102,7 @@
                     document.getElementById("chat").style.display = "block";
 
                     loadChatMessages();
+                    loadFiles();
 
                     if (users[username].role === "admin") {
                         document.getElementById("adminPanel").style.display = "block";
@@ -124,96 +115,83 @@
             }
         }
 
-        async function sendMessage() {
-            try {
-                const message = document.getElementById("chatInput").value.trim();
-                const username = sessionStorage.getItem("username");
-                const timestamp = new Date().toLocaleString();
+        async function addUser() {
+            const username = sessionStorage.getItem("username");
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let users = data.record.users;
 
-                if (!message) return;
-
-                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-                const data = await response.json();
-                let chatMessages = data.record.chat || [];
-
-                chatMessages.push({ username, message, timestamp });
-
-                await updateStorage(data.record.users, chatMessages);
-                loadChatMessages();
-            } catch (error) {
-                console.error("Erreur lors de l'envoi du message :", error);
+            if (!users[username] || users[username].role !== "admin") {
+                alert("Seuls les administrateurs peuvent ajouter un utilisateur !");
+                return;
             }
+
+            const newUsername = document.getElementById("newUsername").value.trim();
+            const newUserPassword = document.getElementById("newUserPassword").value.trim();
+            const newUserRole = document.getElementById("newUserRole").value;
+
+            if (!newUsername || !newUserPassword) {
+                alert("Veuillez remplir tous les champs !");
+                return;
+            }
+
+            users[newUsername] = { password: newUserPassword, role: newUserRole };
+            await updateStorage(users, data.record.chat, data.record.files);
+            alert("Utilisateur ajouté avec succès !");
+        }
+
+        async function deleteUser() {
+            const username = sessionStorage.getItem("username");
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let users = data.record.users;
+
+            if (!users[username] || users[username].role !== "admin") {
+                alert("Seuls les administrateurs peuvent supprimer un utilisateur !");
+                return;
+            }
+
+            const usernameToDelete = document.getElementById("deleteUsername").value.trim();
+            delete users[usernameToDelete];
+            await updateStorage(users, data.record.chat, data.record.files);
+            alert("Utilisateur supprimé !");
         }
 
         async function deleteAllMessages() {
-            try {
-                await fetch(jsonBinUrl, {
-                    method: "PUT",
-                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ users: {}, chat: [] })
-                });
-
-                document.getElementById("messages").innerHTML = "";
-                alert("Tous les messages ont été supprimés !");
-            } catch (error) {
-                console.error("Erreur lors de la suppression des messages :", error);
+            const username = sessionStorage.getItem("username");
+            if (username !== "shadow") {
+                alert("Seuls les administrateurs peuvent effacer le chat !");
+                return;
             }
+            await fetch(jsonBinUrl, {
+                method: "PUT",
+                headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                body: JSON.stringify({ users: {}, chat: [], files: [] })
+            });
+            document.getElementById("messages").innerHTML = "";
+            alert("Messages supprimés !");
         }
 
-        async function addUser() {
-    try {
-        const newUsername = document.getElementById("newUsername").value.trim();
-        const newUserPassword = document.getElementById("newUserPassword").value.trim();
-        const newUserRole = document.getElementById("newUserRole").value;
-
-        if (!newUsername || !newUserPassword) {
-            alert("Veuillez remplir tous les champs !");
-            return;
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput").files[0];
+            if (!fileInput) {
+                alert("Sélectionnez un fichier !");
+                return;
+            }
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let files = data.record.files || [];
+            files.push({ name: fileInput.name, url: URL.createObjectURL(fileInput) });
+            await updateStorage(data.record.users, data.record.chat, files);
+            loadFiles();
         }
 
-        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-        const data = await response.json();
-        let users = data.record.users;
-
-        if (users[newUsername]) {
-            alert("Cet identifiant existe déjà !");
-            return;
+        async function loadFiles() {
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let files = data.record.files || [];
+            document.getElementById("fileList").innerHTML = files.map(file => `<p><a href="${file.url}" download>${file.name}</a></p>`).join("");
         }
-
-        users[newUsername] = { password: newUserPassword, role: newUserRole };
-
-        await updateStorage(users, data.record.chat);
-        alert("Utilisateur ajouté avec succès !");
-    } catch (error) {
-        console.error("Erreur lors de l'ajout de l'utilisateur :", error);
-    }
-}
-
-async function deleteUser() {
-    try {
-        const usernameToDelete = document.getElementById("deleteUsername").value.trim();
-
-        if (!usernameToDelete) {
-            alert("Veuillez entrer un identifiant à supprimer !");
-            return;
-        }
-
-        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-        const data = await response.json();
-        let users = data.record.users;
-
-        if (!users[usernameToDelete]) {
-            alert("Cet identifiant n'existe pas !");
-            return;
-        }
-
-        delete users[usernameToDelete];
-        await updateStorage(users, data.record.chat);
-        alert("Utilisateur supprimé avec succès !");
-    } catch (error) {
-        console.error("Erreur lors de la suppression de l'utilisateur :", error);
-    }
-}
     </script>
 </body>
 </html>
