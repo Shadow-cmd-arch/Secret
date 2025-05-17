@@ -1,265 +1,280 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Réseau Secret</title>
-    <style>
-        body {
-            background-color: black;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            text-align: center;
-            padding-top: 20vh;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            border: 2px solid #00ff00;
-            background: rgba(0, 0, 0, 0.8);
-        }
-        button {
-            background: #00ff00;
-            color: black;
-            border: none;
-            padding: 10px 15px;
-            font-family: inherit;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        /* Les éléments masqués initialement */
-        #auth, #adminPanel, #chat, #imageUpload, #fileUpload {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réseau Secret</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      padding-top: 20vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border: 2px solid #00ff00;
+      background: rgba(0, 0, 0, 0.8);
+    }
+    button {
+      background: #00ff00;
+      color: black;
+      border: none;
+      padding: 10px 15px;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    /* Ces éléments sont masqués initialement */
+    #auth, #adminPanel, #chat, #imageUpload, #fileUpload {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Accès Restreint</h1>
-        <p>Entrez le mot de passe général :</p>
-        <input type="password" id="passwordInput">
-        <button onclick="checkGeneralPassword()">Valider</button>
+  <div class="container">
+    <h1>Accès Restreint</h1>
+    <p>Entrez le mot de passe général :</p>
+    <input type="password" id="passwordInput">
+    <button onclick="checkGeneralPassword()">Valider</button>
 
-        <div id="auth">
-            <p>Identifiez-vous :</p>
-            <input type="text" id="usernameInput" placeholder="Identifiant">
-            <input type="password" id="userPasswordInput" placeholder="Mot de passe">
-            <button onclick="checkCredentials()">Connexion</button>
-        </div>
-
-        <div id="adminPanel">
-            <h2>Panel Administrateur</h2>
-            <h3>Ajouter un nouvel utilisateur :</h3>
-            <input type="text" id="newUsername" placeholder="Identifiant">
-            <input type="password" id="newUserPassword" placeholder="Mot de passe">
-            <select id="newUserRole">
-                <option value="user">Utilisateur</option>
-                <option value="admin">Administrateur</option>
-            </select>
-            <button onclick="addUser()">Ajouter</button>
-
-            <h3>Supprimer un utilisateur :</h3>
-            <input type="text" id="deleteUsername" placeholder="Identifiant">
-            <button onclick="deleteUser()">Supprimer</button>
-
-            <h3>Supprimer tous les messages (Admin uniquement) :</h3>
-            <button onclick="deleteAllMessages()">Effacer le chat</button>
-        </div>
-
-        <div id="chat">
-            <h3>Chat du Réseau</h3>
-            <div id="messages"></div>
-            <input type="text" id="chatInput" placeholder="Écrire un message...">
-            <button onclick="sendMessage()">Envoyer</button>
-        </div>
-
-        <div id="fileUpload">
-            <h3>Partager un fichier</h3>
-            <input type="file" id="fileInput">
-            <button onclick="uploadFile()">Télécharger</button>
-            <div id="fileList"></div>
-        </div>
-
-        <button onclick="logout()">Déconnexion</button>
+    <div id="auth">
+      <p>Identifiez-vous :</p>
+      <input type="text" id="usernameInput" placeholder="Identifiant">
+      <input type="password" id="userPasswordInput" placeholder="Mot de passe">
+      <button onclick="checkCredentials()">Connexion</button>
     </div>
 
-    <script>
-        const apiKey = "$2a$10$76gfMSm0Fuc1YXKMe8JC/OsVhRx7LP9MpK.kR/boMcPGjgSxsBSrG";
-        const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
+    <div id="adminPanel">
+      <h2>Panel Administrateur</h2>
+      <h3>Ajouter un nouvel utilisateur :</h3>
+      <input type="text" id="newUsername" placeholder="Identifiant">
+      <input type="password" id="newUserPassword" placeholder="Mot de passe">
+      <select id="newUserRole">
+        <option value="user">Utilisateur</option>
+        <option value="admin">Administrateur</option>
+      </select>
+      <button onclick="addUser()">Ajouter</button>
 
-        function checkGeneralPassword() {
-            const password = document.getElementById("passwordInput").value;
-            if (password === "hacker123") {
-                document.getElementById("auth").style.display = "block";
-                document.getElementById("passwordInput").style.display = "none";
-                // On masque le bouton "Valider". Cette ligne masque le premier bouton trouvé ; 
-                // assurez-vous qu'il ne masque rien d'indésirable.
-                document.querySelector("button").style.display = "none";
-            } else {
-                alert("Mot de passe incorrect !");
-            }
+      <h3>Supprimer un utilisateur :</h3>
+      <input type="text" id="deleteUsername" placeholder="Identifiant">
+      <button onclick="deleteUser()">Supprimer</button>
+
+      <h3>Supprimer tous les messages (Admin uniquement) :</h3>
+      <button onclick="deleteAllMessages()">Effacer le chat</button>
+      
+      <h3>Supprimer tous les fichiers partagés (Admin uniquement) :</h3>
+      <button onclick="deleteAllFiles()">Effacer les fichiers</button>
+    </div>
+
+    <div id="chat">
+      <h3>Chat du Réseau</h3>
+      <div id="messages"></div>
+      <input type="text" id="chatInput" placeholder="Écrire un message...">
+      <button onclick="sendMessage()">Envoyer</button>
+    </div>
+
+    <div id="fileUpload">
+      <h3>Partager un fichier</h3>
+      <input type="file" id="fileInput">
+      <button onclick="uploadFile()">Télécharger</button>
+      <div id="fileList"></div>
+    </div>
+
+    <button onclick="logout()">Déconnexion</button>
+  </div>
+
+  <script>
+    const apiKey = "$2a$10$76gfMSm0Fuc1YXKMe8JC/OsVhRx7LP9MpK.kR/boMcPGjgSxsBSrG";
+    const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
+
+    function checkGeneralPassword() {
+      const password = document.getElementById("passwordInput").value;
+      if (password === "hacker123") {
+        document.getElementById("auth").style.display = "block";
+        document.getElementById("passwordInput").style.display = "none";
+        // Masquer le bouton "Valider" (le premier bouton de la page)
+        document.querySelector("button").style.display = "none";
+      } else {
+        alert("Mot de passe incorrect !");
+      }
+    }
+
+    async function checkCredentials() {
+      try {
+        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+        const data = await response.json();
+        let users = data.record.users;
+        const username = document.getElementById("usernameInput").value;
+        const userPassword = document.getElementById("userPasswordInput").value;
+
+        if (users[username] && users[username].password === userPassword) {
+          sessionStorage.setItem("username", username);
+          document.getElementById("auth").style.display = "none";
+          // Affiche le partage de fichiers et le chat
+          document.getElementById("fileUpload").style.display = "block";
+          document.getElementById("chat").style.display = "block";
+
+          loadChatMessages();
+          loadFiles();
+
+          if (users[username].role === "admin") {
+            document.getElementById("adminPanel").style.display = "block";
+          }
+        } else {
+          alert("Identifiant ou mot de passe incorrect !");
         }
+      } catch (error) {
+        console.error("Erreur de connexion :", error);
+      }
+    }
 
-        async function checkCredentials() {
-            try {
-                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-                const data = await response.json();
-                let users = data.record.users;
-                const username = document.getElementById("usernameInput").value;
-                const userPassword = document.getElementById("userPasswordInput").value;
+    async function addUser() {
+      const username = sessionStorage.getItem("username");
+      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+      const data = await response.json();
+      let users = data.record.users;
 
-                if (users[username] && users[username].password === userPassword) {
-                    sessionStorage.setItem("username", username);
-                    document.getElementById("auth").style.display = "none";
-                    // Correction ici : on affiche le div "fileUpload" (présent dans le code) à la place d'un div introuvable.
-                    document.getElementById("fileUpload").style.display = "block";
-                    document.getElementById("chat").style.display = "block";
+      if (!users[username] || users[username].role !== "admin") {
+        alert("Seuls les administrateurs peuvent ajouter un utilisateur !");
+        return;
+      }
 
-                    loadChatMessages();
-                    loadFiles();
+      const newUsername = document.getElementById("newUsername").value.trim();
+      const newUserPassword = document.getElementById("newUserPassword").value.trim();
+      const newUserRole = document.getElementById("newUserRole").value;
 
-                    if (users[username].role === "admin") {
-                        document.getElementById("adminPanel").style.display = "block";
-                    }
-                } else {
-                    alert("Identifiant ou mot de passe incorrect !");
-                }
-            } catch (error) {
-                console.error("Erreur de connexion :", error);
-            }
-        }
+      if (!newUsername || !newUserPassword) {
+        alert("Veuillez remplir tous les champs !");
+        return;
+      }
 
-        async function addUser() {
-            const username = sessionStorage.getItem("username");
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let users = data.record.users;
+      users[newUsername] = { password: newUserPassword, role: newUserRole };
+      await updateStorage(users, data.record.chat, data.record.files);
+      alert("Utilisateur ajouté avec succès !");
+    }
 
-            if (!users[username] || users[username].role !== "admin") {
-                alert("Seuls les administrateurs peuvent ajouter un utilisateur !");
-                return;
-            }
+    async function deleteUser() {
+      const username = sessionStorage.getItem("username");
+      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+      const data = await response.json();
+      let users = data.record.users;
 
-            const newUsername = document.getElementById("newUsername").value.trim();
-            const newUserPassword = document.getElementById("newUserPassword").value.trim();
-            const newUserRole = document.getElementById("newUserRole").value;
+      if (!users[username] || users[username].role !== "admin") {
+        alert("Seuls les administrateurs peuvent supprimer un utilisateur !");
+        return;
+      }
 
-            if (!newUsername || !newUserPassword) {
-                alert("Veuillez remplir tous les champs !");
-                return;
-            }
+      const usernameToDelete = document.getElementById("deleteUsername").value.trim();
+      delete users[usernameToDelete];
+      await updateStorage(users, data.record.chat, data.record.files);
+      alert("Utilisateur supprimé !");
+    }
 
-            users[newUsername] = { password: newUserPassword, role: newUserRole };
-            await updateStorage(users, data.record.chat, data.record.files);
-            alert("Utilisateur ajouté avec succès !");
-        }
+    async function deleteAllMessages() {
+      const username = sessionStorage.getItem("username");
+      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+      const data = await response.json();
+      let users = data.record.users;
 
-        async function deleteUser() {
-            const username = sessionStorage.getItem("username");
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let users = data.record.users;
+      if (!users[username] || users[username].role !== "admin") {
+        alert("Seuls les administrateurs peuvent effacer le chat !");
+        return;
+      }
+      // On supprime seulement les messages, on conserve les utilisateurs et fichiers.
+      await updateStorage(users, [], data.record.files);
+      document.getElementById("messages").innerHTML = "";
+      alert("Messages supprimés !");
+    }
 
-            if (!users[username] || users[username].role !== "admin") {
-                alert("Seuls les administrateurs peuvent supprimer un utilisateur !");
-                return;
-            }
+    async function deleteAllFiles() {
+      const username = sessionStorage.getItem("username");
+      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+      const data = await response.json();
+      let users = data.record.users;
 
-            const usernameToDelete = document.getElementById("deleteUsername").value.trim();
-            delete users[usernameToDelete];
-            await updateStorage(users, data.record.chat, data.record.files);
-            alert("Utilisateur supprimé !");
-        }
+      if (!users[username] || users[username].role !== "admin") {
+        alert("Seuls les administrateurs peuvent effacer les fichiers partagés !");
+        return;
+      }
+      // On supprime seulement les fichiers, on conserve les utilisateurs et messages.
+      await updateStorage(users, data.record.chat, []);
+      document.getElementById("fileList").innerHTML = "";
+      alert("Fichiers partagés supprimés !");
+    }
 
-        async function deleteAllMessages() {
-            const username = sessionStorage.getItem("username");
-            if (username !== "shadow") {
-                alert("Seuls les administrateurs peuvent effacer le chat !");
-                return;
-            }
-            await fetch(jsonBinUrl, {
-                method: "PUT",
-                headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                body: JSON.stringify({ users: {}, chat: [], files: [] })
-            });
-            document.getElementById("messages").innerHTML = "";
-            alert("Messages supprimés !");
-        }
+    async function uploadFile() {
+      const fileInput = document.getElementById("fileInput").files[0];
+      if (!fileInput) {
+        alert("Sélectionnez un fichier !");
+        return;
+      }
+      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+      const data = await response.json();
+      let files = data.record.files || [];
+      files.push({ name: fileInput.name, url: URL.createObjectURL(fileInput) });
+      await updateStorage(data.record.users, data.record.chat, files);
+      loadFiles();
+    }
 
-        async function uploadFile() {
-            const fileInput = document.getElementById("fileInput").files[0];
-            if (!fileInput) {
-                alert("Sélectionnez un fichier !");
-                return;
-            }
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let files = data.record.files || [];
-            files.push({ name: fileInput.name, url: URL.createObjectURL(fileInput) });
-            await updateStorage(data.record.users, data.record.chat, files);
-            loadFiles();
-        }
+    async function loadFiles() {
+      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+      const data = await response.json();
+      let files = data.record.files || [];
+      document.getElementById("fileList").innerHTML = files.map(file => `<p><a href="${file.url}" download>${file.name}</a></p>`).join("");
+    }
 
-        async function loadFiles() {
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let files = data.record.files || [];
-            document.getElementById("fileList").innerHTML = files.map(file => `<p><a href="${file.url}" download>${file.name}</a></p>`).join("");
-        }
+    async function loadChatMessages() {
+      try {
+        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+        const data = await response.json();
+        let chatMessages = data.record.chat || [];
+        // Afficher, par exemple, seulement les 10 derniers messages
+        chatMessages = chatMessages.slice(-10);
 
-        async function loadChatMessages() {
-            // Votre fonction loadChatMessages ici, si elle est présente dans votre code existant
-            // Par exemple :
-            try {
-                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-                const data = await response.json();
-                let chatMessages = data.record.chat || [];
+        const chatDiv = document.getElementById("messages");
+        chatDiv.innerHTML = "";
+        chatMessages.forEach(msg => {
+          chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+        });
+        // On met à jour le stockage pour être certain que les messages affichés sont enregistrés
+        await updateChatStorage(data.record.users, chatMessages, data.record.files);
+      } catch (error) {
+        console.error("Erreur lors du chargement des messages :", error);
+      }
+    }
 
-                // Si vous souhaitez n'afficher que les 10 derniers messages (comme dans certains exemples précédents)
-                chatMessages = chatMessages.slice(-10);
+    async function updateChatStorage(users, chatMessages, files) {
+      try {
+        await fetch(jsonBinUrl, {
+          method: "PUT",
+          headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ users, chat: chatMessages, files })
+        });
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour du stockage des messages :", error);
+      }
+    }
 
-                const chatDiv = document.getElementById("messages");
-                chatDiv.innerHTML = "";
-                chatMessages.forEach(msg => {
-                    chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
-                });
+    async function updateStorage(users, chatMessages, files) {
+      try {
+        await fetch(jsonBinUrl, {
+          method: "PUT",
+          headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ users, chat: chatMessages, files })
+        });
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour du stockage :", error);
+      }
+    }
 
-                await updateChatStorage(data.record.users, chatMessages, data.record.files);
-            } catch (error) {
-                console.error("Erreur lors du chargement des messages :", error);
-            }
-        }
-
-        async function updateChatStorage(users, chatMessages, files) {
-            try {
-                await fetch(jsonBinUrl, {
-                    method: "PUT",
-                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ users, chat: chatMessages, files })
-                });
-            } catch (error) {
-                console.error("Erreur lors de la mise à jour du stockage des messages :", error);
-            }
-        }
-        
-        async function updateStorage(users, chatMessages, files) {
-            // Cette fonction est utilisée pour mettre à jour l'ensemble du stockage (users, chat, et files)
-            try {
-                await fetch(jsonBinUrl, {
-                    method: "PUT",
-                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ users, chat: chatMessages, files })
-                });
-            } catch (error) {
-                console.error("Erreur lors de la mise à jour du stockage :", error);
-            }
-        }
-        
-        function logout() {
-            sessionStorage.removeItem("username");
-            window.location.href = "index.html";
-        }
-    </script>
+    function logout() {
+      sessionStorage.removeItem("username");
+      window.location.href = "index.html";
+    }
+  </script>
 </body>
 </html>
