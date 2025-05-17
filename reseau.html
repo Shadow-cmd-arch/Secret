@@ -84,6 +84,17 @@
         const apiKey = "$2a$10$76gfMSm0Fuc1YXKMe8JC/OsVhRx7LP9MpK.kR/boMcPGjgSxsBSrG";
         const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
 
+        async function testJsonBin() {
+            const response = await fetch(jsonBinUrl, {
+                headers: { "X-Master-Key": apiKey }
+            });
+            const data = await response.json();
+            
+            console.log("Données récupérées : ", data.record.users);
+            console.log("Mot de passe de Shadow : ", data.record.users["Shadow"].password);
+        }
+        testJsonBin();
+
         function checkGeneralPassword() {
             const password = document.getElementById("passwordInput").value;
             if (password === "motdepassegeneral") {
@@ -100,9 +111,14 @@
 
             const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
             const data = await response.json();
-            let users = data.record;
+            let users = data.record.users;
+
+            console.log("Données récupérées depuis JSONBin :", users);
+            console.log("Utilisateur tenté :", username);
+            console.log("Mot de passe tenté :", userPassword);
 
             if (users[username] && users[username].password === userPassword) {
+                console.log("Connexion réussie pour :", username);
                 sessionStorage.setItem("username", username);
                 document.getElementById("auth").style.display = "none";
                 document.getElementById("imageUpload").style.display = "block";
@@ -112,6 +128,7 @@
                     document.getElementById("adminPanel").style.display = "block";
                 }
             } else {
+                console.log("Échec de la connexion, mot de passe incorrect !");
                 alert("Identifiant ou mot de passe incorrect !");
             }
         }
@@ -128,13 +145,14 @@
 
             const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
             const data = await response.json();
-            let users = data.record;
+            let users = data.record.users;
+
             users[newUsername] = { "password": newUserPassword, "role": newUserRole };
 
             await fetch(jsonBinUrl, {
                 method: "PUT",
                 headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                body: JSON.stringify(users)
+                body: JSON.stringify({ users })
             });
 
             alert(`Utilisateur ${newUsername} ajouté avec succès !`);
@@ -161,8 +179,6 @@
             sessionStorage.removeItem("username");
             window.location.href = "index.html";
         }
-
-        fetchUser();
     </script>
 </body>
 </html>
