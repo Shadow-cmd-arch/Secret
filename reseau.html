@@ -61,6 +61,9 @@
             <h3>Supprimer un utilisateur :</h3>
             <input type="text" id="deleteUsername" placeholder="Identifiant">
             <button onclick="deleteUser()">Supprimer</button>
+
+            <h3>Supprimer tous les messages :</h3>
+            <button onclick="deleteAllMessages()">Effacer le chat</button>
         </div>
 
         <div id="chat">
@@ -142,81 +145,75 @@
             }
         }
 
-        async function loadChatMessages() {
+        async function deleteAllMessages() {
             try {
-                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-                const data = await response.json();
-                let chatMessages = data.record.chat || [];
-
-                const recentMessages = chatMessages.slice(-10);
-
-                const chatDiv = document.getElementById("messages");
-                chatDiv.innerHTML = "";
-
-                recentMessages.forEach(msg => {
-                    chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} 
-                    <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+                await fetch(jsonBinUrl, {
+                    method: "PUT",
+                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ users: {}, chat: [] })
                 });
+
+                document.getElementById("messages").innerHTML = "";
+                alert("Tous les messages ont été supprimés !");
             } catch (error) {
-                console.error("Erreur lors du chargement des messages :", error);
+                console.error("Erreur lors de la suppression des messages :", error);
             }
         }
 
         async function addUser() {
-            try {
-                const newUsername = document.getElementById("newUsername").value.trim();
-                const newUserPassword = document.getElementById("newUserPassword").value.trim();
-                const newUserRole = document.getElementById("newUserRole").value;
+    try {
+        const newUsername = document.getElementById("newUsername").value.trim();
+        const newUserPassword = document.getElementById("newUserPassword").value.trim();
+        const newUserRole = document.getElementById("newUserRole").value;
 
-                if (!newUsername || !newUserPassword) {
-                    alert("Veuillez remplir tous les champs !");
-                    return;
-                }
-
-                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-                const data = await response.json();
-                let users = data.record.users;
-
-                if (users[newUsername]) {
-                    alert("Cet identifiant existe déjà !");
-                    return;
-                }
-
-                users[newUsername] = { password: newUserPassword, role: newUserRole };
-
-                await updateStorage(users, data.record.chat);
-                alert("Utilisateur ajouté avec succès !");
-            } catch (error) {
-                console.error("Erreur lors de l'ajout de l'utilisateur :", error);
-            }
+        if (!newUsername || !newUserPassword) {
+            alert("Veuillez remplir tous les champs !");
+            return;
         }
 
-        async function deleteUser() {
-            try {
-                const usernameToDelete = document.getElementById("deleteUsername").value.trim();
+        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+        const data = await response.json();
+        let users = data.record.users;
 
-                if (!usernameToDelete) {
-                    alert("Veuillez entrer un identifiant à supprimer !");
-                    return;
-                }
-
-                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-                const data = await response.json();
-                let users = data.record.users;
-
-                if (!users[usernameToDelete]) {
-                    alert("Cet identifiant n'existe pas !");
-                    return;
-                }
-
-                delete users[usernameToDelete];
-                await updateStorage(users, data.record.chat);
-                alert("Utilisateur supprimé avec succès !");
-            } catch (error) {
-                console.error("Erreur lors de la suppression de l'utilisateur :", error);
-            }
+        if (users[newUsername]) {
+            alert("Cet identifiant existe déjà !");
+            return;
         }
 
+        users[newUsername] = { password: newUserPassword, role: newUserRole };
+
+        await updateStorage(users, data.record.chat);
+        alert("Utilisateur ajouté avec succès !");
+    } catch (error) {
+        console.error("Erreur lors de l'ajout de l'utilisateur :", error);
+    }
+}
+
+async function deleteUser() {
+    try {
+        const usernameToDelete = document.getElementById("deleteUsername").value.trim();
+
+        if (!usernameToDelete) {
+            alert("Veuillez entrer un identifiant à supprimer !");
+            return;
+        }
+
+        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+        const data = await response.json();
+        let users = data.record.users;
+
+        if (!users[usernameToDelete]) {
+            alert("Cet identifiant n'existe pas !");
+            return;
+        }
+
+        delete users[usernameToDelete];
+        await updateStorage(users, data.record.chat);
+        alert("Utilisateur supprimé avec succès !");
+    } catch (error) {
+        console.error("Erreur lors de la suppression de l'utilisateur :", error);
+    }
+}
     </script>
 </body>
 </html>
