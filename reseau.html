@@ -117,24 +117,37 @@
             }
         }
 
-        async function sendMessage() {
+        async function addUser() {
             try {
-                const message = document.getElementById("chatInput").value;
-                const username = sessionStorage.getItem("username");
-                const timestamp = new Date().toLocaleString();
+                const newUsername = document.getElementById("newUsername").value.trim();
+                const newUserPassword = document.getElementById("newUserPassword").value.trim();
+                const newUserRole = document.getElementById("newUserRole").value;
 
-                if (!message) return;
+                if (!newUsername || !newUserPassword) {
+                    alert("Veuillez remplir tous les champs !");
+                    return;
+                }
 
                 const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
                 const data = await response.json();
-                let chatMessages = data.record.chat || [];
+                let users = data.record.users;
 
-                chatMessages.push({ username, message, timestamp });
+                if (users[newUsername]) {
+                    alert("Cet identifiant existe déjà !");
+                    return;
+                }
 
-                await updateChatStorage(data.record.users, chatMessages);
-                loadChatMessages();
+                users[newUsername] = { password: newUserPassword, role: newUserRole };
+
+                await fetch(jsonBinUrl, {
+                    method: "PUT",
+                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ users, chat: data.record.chat })
+                });
+
+                alert("Nouvel utilisateur ajouté avec succès !");
             } catch (error) {
-                console.error("Erreur lors de l'envoi du message :", error);
+                console.error("Erreur lors de l'ajout de l'utilisateur :", error);
             }
         }
 
@@ -144,7 +157,6 @@
                 const data = await response.json();
                 let chatMessages = data.record.chat || [];
 
-                // Afficher seulement les 10 derniers messages
                 const recentMessages = chatMessages.slice(-10);
 
                 const chatDiv = document.getElementById("messages");
@@ -156,18 +168,6 @@
                 });
             } catch (error) {
                 console.error("Erreur lors du chargement des messages :", error);
-            }
-        }
-
-        async function updateChatStorage(users, chatMessages) {
-            try {
-                await fetch(jsonBinUrl, {
-                    method: "PUT",
-                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ users, chat: chatMessages })
-                });
-            } catch (error) {
-                console.error("Erreur lors de la mise à jour du stockage des messages :", error);
             }
         }
 
