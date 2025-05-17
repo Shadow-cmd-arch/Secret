@@ -84,6 +84,18 @@
         const apiKey = "$2a$10$z13GMKB7jJxMtSbReUV/E.0Ldiv.VCBqVrvecBeRqkDM6IrLA4G8m";
         const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
 
+        async function testJsonBin() {
+    const response = await fetch("https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80", {
+        headers: { "X-Master-Key": "$2a$10$z13GMKB7jJxMtSbReUV/E.0Ldiv.VCBqVrvecBeRqkDM6IrLA4G8m" }
+    });
+    const data = await response.json();
+    
+    console.log("Données récupérées : ", data.record.users);
+    console.log("Mot de passe de Shadow : ", data.record.users["Shadow"].password);
+}
+testJsonBin();
+
+
         function checkGeneralPassword() {
             const password = document.getElementById("passwordInput").value;
             if (password === "motdepassegeneral") {
