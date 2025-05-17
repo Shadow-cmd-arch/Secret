@@ -319,24 +319,25 @@ document.addEventListener("keydown", event => {
         event.key === "F12" || 
         (event.ctrlKey && event.shiftKey && event.key === "I") || 
         (event.ctrlKey && event.key === "U") || 
-        (event.ctrlKey && event.key === "S") // Empêche "Ctrl+S" pour sauvegarder la page
+        (event.ctrlKey && event.key === "S")
     ) {
         event.preventDefault();
-        return false; // Bloque complètement sans afficher d'alerte
+        return false;
     }
 });
 
-// Désactiver l'inspecteur par console
+// Détection de l'ouverture des outils de développement
 (function() {
     const devtools = /./;
     devtools.toString = function() { return "Détecté"; };
 
     console.log("%cInspection bloquée !", "color: red; font-size: 50px; font-weight: bold;");
+
     setInterval(() => {
         if (window.console && (console.firebug || devtools.toString() === "Détecté")) {
-            window.location.reload(); // Recharge la page si DevTools sont ouverts
+            alert("Inspection bloquée ! Fermez les outils de développement.");
         }
-    }, 1000);
+    }, 5000); // Vérifie toutes les 5 secondes pour éviter le spam
 })();
 
   </script>
