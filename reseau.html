@@ -313,7 +313,7 @@
 // Désactiver le clic droit
 document.addEventListener("contextmenu", event => event.preventDefault());
 
-// Bloquer l'accès à l'inspecteur de code
+// Bloquer les raccourcis clavier pour l'inspecteur de code
 document.addEventListener("keydown", event => {
     if (
         event.key === "F12" || 
@@ -322,18 +322,22 @@ document.addEventListener("keydown", event => {
         (event.ctrlKey && event.key === "S")
     ) {
         event.preventDefault();
-        return false; // Bloque complètement sans afficher de message
+        return false;
     }
 });
 
 // Détection avancée des outils de développement
 (function() {
     const devtools = new Image();
-    devtools.__defineGetter__('id', function() {
-        window.location.href = "about:blank"; // Redirige vers une page vide si DevTools sont détectés
+    devtools.__defineGetter__("id", function() {
+        setTimeout(() => {
+            window.stop(); // Empêche le chargement de la page si DevTools sont détectés
+            document.body.innerHTML = ""; // Vide le contenu de la page
+        }, 1);
     });
     console.log(devtools);
 })();
+
   </script>
 </body>
 </html>
