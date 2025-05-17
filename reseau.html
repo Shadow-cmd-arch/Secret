@@ -28,18 +28,25 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        #adminPanel {
+        #auth, #adminPanel, #chat, #imageUpload {
             display: none;
-            border-top: 1px solid #00ff00;
-            margin-top: 20px;
-            padding-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bienvenue sur le réseau secret</h1>
-        <p id="welcomeMessage">Chargement...</p>
+        <h1>Accès Restreint</h1>
+        <p>Entrez le mot de passe général :</p>
+        <input type="password" id="passwordInput">
+        <button onclick="checkGeneralPassword()">Valider</button>
+
+        <!-- Formulaire d'identification -->
+        <div id="auth">
+            <p>Identifiez-vous :</p>
+            <input type="text" id="usernameInput" placeholder="Identifiant">
+            <input type="password" id="userPasswordInput" placeholder="Mot de passe">
+            <button onclick="checkCredentials()">Connexion</button>
+        </div>
 
         <!-- Interface Admin -->
         <div id="adminPanel">
@@ -52,47 +59,61 @@
                 <option value="admin">Administrateur</option>
             </select>
             <button onclick="addUser()">Ajouter</button>
+        </div>
 
-            <h3>Demandes en attente :</h3>
-            <div id="notification"></div>
+        <!-- Chat -->
+        <div id="chat">
+            <h3>Chat du Réseau</h3>
+            <div id="messages"></div>
+            <input type="text" id="chatInput" placeholder="Écrire un message...">
+            <button onclick="sendMessage()">Envoyer</button>
+        </div>
+
+        <!-- Téléchargement d'images -->
+        <div id="imageUpload">
+            <h3>Partager une image</h3>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="uploadImage()">Télécharger</button>
+            <div id="imagePreview"></div>
         </div>
 
         <button onclick="logout()">Déconnexion</button>
     </div>
 
     <script>
-        const apiKey = "$2a$10$mY0L8PeCnkG95OVRi1v.N.nXVf6HuEzTwcPMCk0diyr.e5nIIjO9W";
-        const jsonBinUrl = "https://api.jsonbin.io/v3/b/682862a78960c979a59b497b";
+        const apiKey = "$2a$10$NmwykXRgwF5a/OrG88TpFOkwsePfHIJOFE9.PWYGRY/i.ey4JPWHW";
+        const jsonBinUrl = "https://api.jsonbin.io/v3/b/TON_BIN_ID";
 
-        async function fetchUser() {
-            try {
-                const response = await fetch(jsonBinUrl, {
-                    headers: { "X-Master-Key": apiKey }
-                });
-                const data = await response.json();
-                const users = data.record;
-
-                const username = sessionStorage.getItem("username");
-
-                if (users[username]) {
-                    document.getElementById("welcomeMessage").innerHTML = `Bienvenue, ${username} !`;
-
-                    if (users[username].role === "admin") {
-                        document.getElementById("adminPanel").style.display = "block";
-                        loadApplications();
-                    }
-                } else {
-                    alert("Accès refusé.");
-                    window.location.href = "index.html";
-                }
-            } catch (error) {
-                console.error("Erreur de connexion :", error);
+        function checkGeneralPassword() {
+            const password = document.getElementById("passwordInput").value;
+            if (password === "motdepassegeneral") {
+                document.getElementById("auth").style.display = "block";
+                document.getElementById("passwordInput").style.display = "none";
+            } else {
+                alert("Mot de passe incorrect !");
             }
         }
 
-        function logout() {
-            sessionStorage.removeItem("username");
-            window.location.href = "index.html";
+        async function checkCredentials() {
+            const username = document.getElementById("usernameInput").value;
+            const userPassword = document.getElementById("userPasswordInput").value;
+
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+            const data = await response.json();
+            let users = data.record;
+
+            if (users[username] && users[username].password === userPassword) {
+                sessionStorage.setItem("username", username);
+                document.getElementById("auth").style.display = "none";
+                document.getElementById("imageUpload").style.display = "block";
+                document.getElementById("chat").style.display = "block";
+
+                if (users[username].role === "admin") {
+                    document.getElementById("adminPanel").style.display = "block";
+                }
+            } else {
+                alert("Identifiant ou mot de passe incorrect !");
+            }
         }
 
         async function addUser() {
@@ -105,29 +126,40 @@
                 return;
             }
 
-            const response = await fetch(jsonBinUrl, {
-                headers: { "X-Master-Key": apiKey }
-            });
+            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
             const data = await response.json();
             let users = data.record;
-
             users[newUsername] = { "password": newUserPassword, "role": newUserRole };
 
             await fetch(jsonBinUrl, {
                 method: "PUT",
-                headers: {
-                    "X-Master-Key": apiKey,
-                    "Content-Type": "application/json"
-                },
+                headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
                 body: JSON.stringify(users)
             });
 
             alert(`Utilisateur ${newUsername} ajouté avec succès !`);
         }
 
-        async function loadApplications() {
-            const notificationDiv = document.getElementById("notification");
-            notificationDiv.innerHTML = "<p>Aucune demande en attente.</p>";
+        function sendMessage() {
+            const message = document.getElementById("chatInput").value;
+            document.getElementById("messages").innerHTML += `<p>${sessionStorage.getItem("username")}: ${message}</p>`;
+            document.getElementById("chatInput").value = "";
+        }
+
+        function uploadImage() {
+            const file = document.getElementById("imageInput").files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById("imagePreview").innerHTML += `<img src="${e.target.result}" width="200">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem("username");
+            window.location.href = "index.html";
         }
 
         fetchUser();
