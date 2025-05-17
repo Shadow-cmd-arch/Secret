@@ -1,26 +1,35 @@
-// Bloquer le clic droit
+let intrusionDetected = false; 
+
 document.addEventListener("contextmenu", function(event) {
-    event.preventDefault();
-    showFakeAlert();
+    if (intrusionDetected) {
+        event.preventDefault();
+    } else {
+        event.preventDefault();
+        showFakeAlert();
+    }
 });
 
-// Bloquer les raccourcis vers la console (F12, Ctrl+Shift+I, Ctrl+U)
 document.addEventListener("keydown", function(event) {
-    if (event.ctrlKey && (event.key === "u" || event.key === "U" || event.key === "i" || event.key === "I" || event.key === "c" || event.key === "C")) {
+    if (intrusionDetected) {
         event.preventDefault();
-        showFakeAlert();
-    }
-    if (event.keyCode === 123) { // F12
-        event.preventDefault();
-        showFakeAlert();
+    } else {
+        if (event.ctrlKey && (event.key === "u" || event.key === "i")) {
+            event.preventDefault();
+            showFakeAlert();
+        }
+        if (event.keyCode === 123) { // F12
+            event.preventDefault();
+            showFakeAlert();
+        }
     }
 });
 
-// Fausse alerte système
 function showFakeAlert() {
-    setTimeout(function() {
-        alert("🛑 Système détecté : Activité suspecte !\n\nVotre accès sera bloqué si vous continuez à tenter d'inspecter le code.");
-    }, 500);
+    intrusionDetected = true;
+    alert("🛑 ALERTE SYSTÈME : Intrusion détectée !");
+    setTimeout(() => {
+        intrusionDetected = false; 
+    }, 5000);
 }
 
 // Obfuscation du code
