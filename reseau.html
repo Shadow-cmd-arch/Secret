@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réseau Secret</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            padding-top: 20vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        button {
+            background: #00ff00;
+            color: black;
+            border: none;
+            padding: 10px 15px;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #adminPanel {
+            display: none;
+            border-top: 1px solid #00ff00;
+            margin-top: 20px;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenue sur le réseau secret</h1>
+        <p id="welcomeMessage">Chargement...</p>
+
+        <!-- Interface Admin -->
+        <div id="adminPanel">
+            <h2>Panel Administrateur</h2>
+            <h3>Ajouter un nouvel utilisateur :</h3>
+            <input type="text" id="newUsername" placeholder="Identifiant">
+            <input type="password" id="newUserPassword" placeholder="Mot de passe">
+            <select id="newUserRole">
+                <option value="user">Utilisateur</option>
+                <option value="admin">Administrateur</option>
+            </select>
+            <button onclick="addUser()">Ajouter</button>
+
+            <h3>Demandes en attente :</h3>
+            <div id="notification"></div>
+        </div>
+
+        <button onclick="logout()">Déconnexion</button>
+    </div>
+
+    <script>
+        const apiKey = "$2a$10$mY0L8PeCnkG95OVRi1v.N.nXVf6HuEzTwcPMCk0diyr.e5nIIjO9W";
+        const jsonBinUrl = "https://api.jsonbin.io/v3/b/682862a78960c979a59b497b";
+
+        async function fetchUser() {
+            try {
+                const response = await fetch(jsonBinUrl, {
+                    headers: { "X-Master-Key": apiKey }
+                });
+                const data = await response.json();
+                const users = data.record;
+
+                const username = sessionStorage.getItem("username");
+
+                if (users[username]) {
+                    document.getElementById("welcomeMessage").innerHTML = `Bienvenue, ${username} !`;
+
+                    if (users[username].role === "admin") {
+                        document.getElementById("adminPanel").style.display = "block";
+                        loadApplications();
+                    }
+                } else {
+                    alert("Accès refusé.");
+                    window.location.href = "index.html";
+                }
+            } catch (error) {
+                console.error("Erreur de connexion :", error);
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem("username");
+            window.location.href = "index.html";
+        }
+
+        async function addUser() {
+            const newUsername = document.getElementById("newUsername").value;
+            const newUserPassword = document.getElementById("newUserPassword").value;
+            const newUserRole = document.getElementById("newUserRole").value;
+
+            if (!newUsername || !newUserPassword) {
+                alert("Veuillez remplir tous les champs !");
+                return;
+            }
+
+            const response = await fetch(jsonBinUrl, {
+                headers: { "X-Master-Key": apiKey }
+            });
+            const data = await response.json();
+            let users = data.record;
+
+            users[newUsername] = { "password": newUserPassword, "role": newUserRole };
+
+            await fetch(jsonBinUrl, {
+                method: "PUT",
+                headers: {
+                    "X-Master-Key": apiKey,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(users)
+            });
+
+            alert(`Utilisateur ${newUsername} ajouté avec succès !`);
+        }
+
+        async function loadApplications() {
+            const notificationDiv = document.getElementById("notification");
+            notificationDiv.innerHTML = "<p>Aucune demande en attente.</p>";
+        }
+
+        fetchUser();
+    </script>
+</body>
+</html>
