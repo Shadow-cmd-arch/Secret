@@ -57,6 +57,10 @@
                 <option value="admin">Administrateur</option>
             </select>
             <button onclick="addUser()">Ajouter</button>
+
+            <h3>Supprimer un utilisateur :</h3>
+            <input type="text" id="deleteUsername" placeholder="Identifiant">
+            <button onclick="deleteUser()">Supprimer</button>
         </div>
 
         <div id="chat">
@@ -131,7 +135,7 @@
 
                 chatMessages.push({ username, message, timestamp });
 
-                await updateChatStorage(data.record.users, chatMessages);
+                await updateStorage(data.record.users, chatMessages);
                 loadChatMessages();
             } catch (error) {
                 console.error("Erreur lors de l'envoi du message :", error);
@@ -158,22 +162,61 @@
             }
         }
 
-        async function updateChatStorage(users, chatMessages) {
+        async function addUser() {
             try {
-                await fetch(jsonBinUrl, {
-                    method: "PUT",
-                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ users, chat: chatMessages })
-                });
+                const newUsername = document.getElementById("newUsername").value.trim();
+                const newUserPassword = document.getElementById("newUserPassword").value.trim();
+                const newUserRole = document.getElementById("newUserRole").value;
+
+                if (!newUsername || !newUserPassword) {
+                    alert("Veuillez remplir tous les champs !");
+                    return;
+                }
+
+                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+                const data = await response.json();
+                let users = data.record.users;
+
+                if (users[newUsername]) {
+                    alert("Cet identifiant existe déjà !");
+                    return;
+                }
+
+                users[newUsername] = { password: newUserPassword, role: newUserRole };
+
+                await updateStorage(users, data.record.chat);
+                alert("Utilisateur ajouté avec succès !");
             } catch (error) {
-                console.error("Erreur lors de la mise à jour du stockage des messages :", error);
+                console.error("Erreur lors de l'ajout de l'utilisateur :", error);
             }
         }
 
-        function logout() {
-            sessionStorage.removeItem("username");
-            window.location.href = "index.html";
+        async function deleteUser() {
+            try {
+                const usernameToDelete = document.getElementById("deleteUsername").value.trim();
+
+                if (!usernameToDelete) {
+                    alert("Veuillez entrer un identifiant à supprimer !");
+                    return;
+                }
+
+                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+                const data = await response.json();
+                let users = data.record.users;
+
+                if (!users[usernameToDelete]) {
+                    alert("Cet identifiant n'existe pas !");
+                    return;
+                }
+
+                delete users[usernameToDelete];
+                await updateStorage(users, data.record.chat);
+                alert("Utilisateur supprimé avec succès !");
+            } catch (error) {
+                console.error("Erreur lors de la suppression de l'utilisateur :", error);
+            }
         }
+
     </script>
 </body>
 </html>
