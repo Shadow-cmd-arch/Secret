@@ -308,6 +308,21 @@
       sessionStorage.removeItem("username");
       window.location.href = "index.html";
     }
+
+    // Désactiver le clic droit
+document.addEventListener("contextmenu", event => event.preventDefault());
+
+// Désactiver certaines touches comme F12, Ctrl+Shift+I et Ctrl+U
+document.addEventListener("keydown", event => {
+    if (
+        event.key === "F12" ||
+        (event.ctrlKey && event.shiftKey && event.key === "I") || 
+        (event.ctrlKey && event.key === "U")
+    ) {
+        event.preventDefault();
+        alert("Inspection du code désactivée !");
+    }
+});
   </script>
 </body>
 </html>
