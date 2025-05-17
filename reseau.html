@@ -309,20 +309,36 @@
       window.location.href = "index.html";
     }
 
-    // Désactiver le clic droit
+
+// Désactiver le clic droit
 document.addEventListener("contextmenu", event => event.preventDefault());
 
-// Désactiver certaines touches comme F12, Ctrl+Shift+I et Ctrl+U
+// Désactiver l'inspecteur (F12, Ctrl+Shift+I, Ctrl+U)
 document.addEventListener("keydown", event => {
     if (
-        event.key === "F12" ||
+        event.key === "F12" || 
         (event.ctrlKey && event.shiftKey && event.key === "I") || 
-        (event.ctrlKey && event.key === "U")
+        (event.ctrlKey && event.key === "U") || 
+        (event.ctrlKey && event.key === "S") // Empêche "Ctrl+S" pour sauvegarder la page
     ) {
         event.preventDefault();
-        alert("Inspection du code désactivée !");
+        return false; // Bloque complètement sans afficher d'alerte
     }
 });
+
+// Désactiver l'inspecteur par console
+(function() {
+    const devtools = /./;
+    devtools.toString = function() { return "Détecté"; };
+
+    console.log("%cInspection bloquée !", "color: red; font-size: 50px; font-weight: bold;");
+    setInterval(() => {
+        if (window.console && (console.firebug || devtools.toString() === "Détecté")) {
+            window.location.reload(); // Recharge la page si DevTools sont ouverts
+        }
+    }, 1000);
+})();
+
   </script>
 </body>
 </html>
