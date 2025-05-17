@@ -40,7 +40,6 @@
         <input type="password" id="passwordInput">
         <button onclick="checkGeneralPassword()">Valider</button>
 
-        <!-- Formulaire d'identification -->
         <div id="auth">
             <p>Identifiez-vous :</p>
             <input type="text" id="usernameInput" placeholder="Identifiant">
@@ -48,7 +47,6 @@
             <button onclick="checkCredentials()">Connexion</button>
         </div>
 
-        <!-- Interface Admin -->
         <div id="adminPanel">
             <h2>Panel Administrateur</h2>
             <h3>Ajouter un nouvel utilisateur :</h3>
@@ -61,7 +59,6 @@
             <button onclick="addUser()">Ajouter</button>
         </div>
 
-        <!-- Chat -->
         <div id="chat">
             <h3>Chat du Réseau</h3>
             <div id="messages"></div>
@@ -69,7 +66,6 @@
             <button onclick="sendMessage()">Envoyer</button>
         </div>
 
-        <!-- Téléchargement d'images -->
         <div id="imageUpload">
             <h3>Partager une image</h3>
             <input type="file" id="imageInput" accept="image/*">
@@ -86,7 +82,7 @@
 
         function checkGeneralPassword() {
             const password = document.getElementById("passwordInput").value;
-            if (password === "hacker123") {  // Remplace par ton vrai mot de passe général
+            if (password === "hacker123") {
                 document.getElementById("auth").style.display = "block";
                 document.getElementById("passwordInput").style.display = "none";
             } else {
@@ -95,62 +91,84 @@
         }
 
         async function checkCredentials() {
-            const username = document.getElementById("usernameInput").value;
-            const userPassword = document.getElementById("userPasswordInput").value;
+            try {
+                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+                const data = await response.json();
+                let users = data.record.users;
+                const username = document.getElementById("usernameInput").value;
+                const userPassword = document.getElementById("userPasswordInput").value;
 
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let users = data.record.users;
+                if (users[username] && users[username].password === userPassword) {
+                    sessionStorage.setItem("username", username);
+                    document.getElementById("auth").style.display = "none";
+                    document.getElementById("imageUpload").style.display = "block";
+                    document.getElementById("chat").style.display = "block";
 
-            if (users[username] && users[username].password === userPassword) {
-                sessionStorage.setItem("username", username);
-                document.getElementById("auth").style.display = "none";
-                document.getElementById("imageUpload").style.display = "block";
-                document.getElementById("chat").style.display = "block";
+                    loadChatMessages();
 
-                loadChatMessages(); // Charger les anciens messages du chat
-
-                if (users[username].role === "admin") {
-                    document.getElementById("adminPanel").style.display = "block";
+                    if (users[username].role === "admin") {
+                        document.getElementById("adminPanel").style.display = "block";
+                    }
+                } else {
+                    alert("Identifiant ou mot de passe incorrect !");
                 }
-            } else {
-                alert("Identifiant ou mot de passe incorrect !");
+            } catch (error) {
+                console.error("Erreur de connexion :", error);
             }
         }
 
         async function sendMessage() {
-            const message = document.getElementById("chatInput").value;
-            const username = sessionStorage.getItem("username");
-            const timestamp = new Date().toLocaleString();
+            try {
+                const message = document.getElementById("chatInput").value;
+                const username = sessionStorage.getItem("username");
+                const timestamp = new Date().toLocaleString();
 
-            if (!message) return;
+                if (!message) return;
 
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let chatMessages = data.record.chat || [];
+                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+                const data = await response.json();
+                let chatMessages = data.record.chat || [];
 
-            chatMessages.push({ username, message, timestamp });
+                chatMessages.push({ username, message, timestamp });
 
-            await fetch(jsonBinUrl, {
-                method: "PUT",
-                headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                body: JSON.stringify({ users: data.record.users, chat: chatMessages })
-            });
-
-            loadChatMessages(); // Recharge tous les messages après envoi
+                await updateChatStorage(data.record.users, chatMessages);
+                loadChatMessages();
+            } catch (error) {
+                console.error("Erreur lors de l'envoi du message :", error);
+            }
         }
 
         async function loadChatMessages() {
-            const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-            const data = await response.json();
-            let chatMessages = data.record.chat || [];
+            try {
+                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+                const data = await response.json();
+                let chatMessages = data.record.chat || [];
 
-            const chatDiv = document.getElementById("messages");
-            chatDiv.innerHTML = "";
+                // Afficher seulement les 10 derniers messages
+                const recentMessages = chatMessages.slice(-10);
 
-            chatMessages.forEach(msg => {
-                chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
-            });
+                const chatDiv = document.getElementById("messages");
+                chatDiv.innerHTML = "";
+
+                recentMessages.forEach(msg => {
+                    chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} 
+                    <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+                });
+            } catch (error) {
+                console.error("Erreur lors du chargement des messages :", error);
+            }
+        }
+
+        async function updateChatStorage(users, chatMessages) {
+            try {
+                await fetch(jsonBinUrl, {
+                    method: "PUT",
+                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ users, chat: chatMessages })
+                });
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour du stockage des messages :", error);
+            }
         }
 
         function logout() {
