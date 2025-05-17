@@ -87,6 +87,17 @@
         const apiKey = "<TON_API_KEY>";
         const jsonBinUrl = "<TON_URL_BIN>";
 
+        function checkGeneralPassword() {
+            const password = document.getElementById("passwordInput").value;
+            if (password === "hacker123") {
+                document.getElementById("auth").style.display = "block";
+                document.getElementById("passwordInput").style.display = "none";
+                document.querySelector("button").style.display = "none"; // Masquer le bouton "Valider"
+            } else {
+                alert("Mot de passe incorrect !");
+            }
+        }
+
         async function checkCredentials() {
             try {
                 const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
