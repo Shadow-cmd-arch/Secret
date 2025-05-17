@@ -117,37 +117,24 @@
             }
         }
 
-        async function addUser() {
+        async function sendMessage() {
             try {
-                const newUsername = document.getElementById("newUsername").value.trim();
-                const newUserPassword = document.getElementById("newUserPassword").value.trim();
-                const newUserRole = document.getElementById("newUserRole").value;
+                const message = document.getElementById("chatInput").value.trim();
+                const username = sessionStorage.getItem("username");
+                const timestamp = new Date().toLocaleString();
 
-                if (!newUsername || !newUserPassword) {
-                    alert("Veuillez remplir tous les champs !");
-                    return;
-                }
+                if (!message) return;
 
                 const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
                 const data = await response.json();
-                let users = data.record.users;
+                let chatMessages = data.record.chat || [];
 
-                if (users[newUsername]) {
-                    alert("Cet identifiant existe déjà !");
-                    return;
-                }
+                chatMessages.push({ username, message, timestamp });
 
-                users[newUsername] = { password: newUserPassword, role: newUserRole };
-
-                await fetch(jsonBinUrl, {
-                    method: "PUT",
-                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ users, chat: data.record.chat })
-                });
-
-                alert("Nouvel utilisateur ajouté avec succès !");
+                await updateChatStorage(data.record.users, chatMessages);
+                loadChatMessages();
             } catch (error) {
-                console.error("Erreur lors de l'ajout de l'utilisateur :", error);
+                console.error("Erreur lors de l'envoi du message :", error);
             }
         }
 
@@ -168,6 +155,18 @@
                 });
             } catch (error) {
                 console.error("Erreur lors du chargement des messages :", error);
+            }
+        }
+
+        async function updateChatStorage(users, chatMessages) {
+            try {
+                await fetch(jsonBinUrl, {
+                    method: "PUT",
+                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ users, chat: chatMessages })
+                });
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour du stockage des messages :", error);
             }
         }
 
