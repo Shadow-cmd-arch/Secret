@@ -228,24 +228,27 @@
     }
 
     async function loadChatMessages() {
-      try {
+    try {
         const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
         const data = await response.json();
         let chatMessages = data.record.chat || [];
-        // Afficher, par exemple, seulement les 10 derniers messages
-        chatMessages = chatMessages.slice(-10);
+        let users = data.record.users || {};
+
+        // Afficher seulement les 10 derniers messages
+        const recentMessages = chatMessages.slice(-10);
 
         const chatDiv = document.getElementById("messages");
         chatDiv.innerHTML = "";
-        chatMessages.forEach(msg => {
-          chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+
+        recentMessages.forEach(msg => {
+            const role = users[msg.username]?.role === "admin" ? "(admin)" : "(user)";
+            chatDiv.innerHTML += `<p><strong>${msg.username} ${role}:</strong> ${msg.message} 
+            <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
         });
-        // On met à jour le stockage pour être certain que les messages affichés sont enregistrés
-        await updateChatStorage(data.record.users, chatMessages, data.record.files);
-      } catch (error) {
+    } catch (error) {
         console.error("Erreur lors du chargement des messages :", error);
-      }
     }
+}
 
     async function updateChatStorage(users, chatMessages, files) {
       try {
