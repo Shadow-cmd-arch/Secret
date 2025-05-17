@@ -84,6 +84,16 @@
         const apiKey = "$2a$10$z13GMKB7jJxMtSbReUV/E.0Ldiv.VCBqVrvecBeRqkDM6IrLA4G8m";
         const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
 
+        function checkGeneralPassword() {
+            const password = document.getElementById("passwordInput").value;
+            if (password === "motdepassecorrect") {  // Remplace par ton vrai mot de passe général
+                document.getElementById("auth").style.display = "block";
+                document.getElementById("passwordInput").style.display = "none";
+            } else {
+                alert("Mot de passe incorrect !");
+            }
+        }
+
         async function checkCredentials() {
             const username = document.getElementById("usernameInput").value;
             const userPassword = document.getElementById("userPasswordInput").value;
@@ -98,7 +108,7 @@
                 document.getElementById("imageUpload").style.display = "block";
                 document.getElementById("chat").style.display = "block";
 
-                loadChatMessages(); // Charger les messages du chat
+                loadChatMessages(); // Charger les anciens messages du chat
 
                 if (users[username].role === "admin") {
                     document.getElementById("adminPanel").style.display = "block";
@@ -127,8 +137,7 @@
                 body: JSON.stringify({ users: data.record.users, chat: chatMessages })
             });
 
-            document.getElementById("messages").innerHTML += `<p><strong>${username}:</strong> ${message} <span style="font-size: 10px;">(${timestamp})</span></p>`;
-            document.getElementById("chatInput").value = "";
+            loadChatMessages(); // Recharge tous les messages après envoi
         }
 
         async function loadChatMessages() {
