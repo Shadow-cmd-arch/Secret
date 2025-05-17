@@ -28,6 +28,7 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        /* Les éléments masqués initialement */
         #auth, #adminPanel, #chat, #imageUpload, #fileUpload {
             display: none;
         }
@@ -92,7 +93,9 @@
             if (password === "hacker123") {
                 document.getElementById("auth").style.display = "block";
                 document.getElementById("passwordInput").style.display = "none";
-                document.querySelector("button").style.display = "none"; // Masquer le bouton "Valider"
+                // On masque le bouton "Valider". Cette ligne masque le premier bouton trouvé ; 
+                // assurez-vous qu'il ne masque rien d'indésirable.
+                document.querySelector("button").style.display = "none";
             } else {
                 alert("Mot de passe incorrect !");
             }
@@ -109,7 +112,8 @@
                 if (users[username] && users[username].password === userPassword) {
                     sessionStorage.setItem("username", username);
                     document.getElementById("auth").style.display = "none";
-                    document.getElementById("imageUpload").style.display = "block";
+                    // Correction ici : on affiche le div "fileUpload" (présent dans le code) à la place d'un div introuvable.
+                    document.getElementById("fileUpload").style.display = "block";
                     document.getElementById("chat").style.display = "block";
 
                     loadChatMessages();
@@ -202,6 +206,59 @@
             const data = await response.json();
             let files = data.record.files || [];
             document.getElementById("fileList").innerHTML = files.map(file => `<p><a href="${file.url}" download>${file.name}</a></p>`).join("");
+        }
+
+        async function loadChatMessages() {
+            // Votre fonction loadChatMessages ici, si elle est présente dans votre code existant
+            // Par exemple :
+            try {
+                const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+                const data = await response.json();
+                let chatMessages = data.record.chat || [];
+
+                // Si vous souhaitez n'afficher que les 10 derniers messages (comme dans certains exemples précédents)
+                chatMessages = chatMessages.slice(-10);
+
+                const chatDiv = document.getElementById("messages");
+                chatDiv.innerHTML = "";
+                chatMessages.forEach(msg => {
+                    chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+                });
+
+                await updateChatStorage(data.record.users, chatMessages, data.record.files);
+            } catch (error) {
+                console.error("Erreur lors du chargement des messages :", error);
+            }
+        }
+
+        async function updateChatStorage(users, chatMessages, files) {
+            try {
+                await fetch(jsonBinUrl, {
+                    method: "PUT",
+                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ users, chat: chatMessages, files })
+                });
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour du stockage des messages :", error);
+            }
+        }
+        
+        async function updateStorage(users, chatMessages, files) {
+            // Cette fonction est utilisée pour mettre à jour l'ensemble du stockage (users, chat, et files)
+            try {
+                await fetch(jsonBinUrl, {
+                    method: "PUT",
+                    headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ users, chat: chatMessages, files })
+                });
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour du stockage :", error);
+            }
+        }
+        
+        function logout() {
+            sessionStorage.removeItem("username");
+            window.location.href = "index.html";
         }
     </script>
 </body>
