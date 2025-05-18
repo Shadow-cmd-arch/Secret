@@ -47,12 +47,12 @@ button:hover {
 
 /* Panneau admin avec un effet sinistre */
 #adminPanel {
-  border: 2px solid red;
+  border: 2px solid #00ff00;
   padding: 10px;
   margin-top: 20px;
   border-radius: 10px;
-  background: rgba(255, 0, 0, 0.2);
-  box-shadow: 0px 0px 12px red;
+  background: rgb(0, 0, 0);
+  box-shadow: 0px 0px 12px #00ff00;
 }
 
 /* Messages du chat formatés avec effet terminal */
@@ -95,12 +95,16 @@ input {
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Accès Restreint</h1>
-    <p>Entrez le mot de passe général :</p>
-    <input type="password" id="passwordInput">
+    <div id="userProfile" style="display: none; text-align: center;">
+        <h2>Bienvenue, <span id="userName"></span> !</h2>
+        <p><strong>Statut :</strong> <span id="userStatus"></span></p>
+    </div>
+    <div class="container">
+        <h1>Accès Restreint</h1>
+        <p>Entrez le mot de passe général :</p>
+        <input type="password" id="passwordInput">
     <button onclick="checkGeneralPassword()">Valider</button>
-
+    </div>
     <div id="auth">
       <p>Identifiez-vous :</p>
       <input type="text" id="usernameInput" placeholder="Identifiant">
@@ -162,6 +166,25 @@ input {
         alert("Mot de passe incorrect !");
       }
     }
+    async function showUserProfile() {
+    try {
+        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+        const data = await response.json();
+        let users = data.record.users;
+        const username = sessionStorage.getItem("username");
+
+        // Vérifier si l'utilisateur est bien connecté
+        if (users[username]) {
+            document.getElementById("userName").innerText = username;
+            document.getElementById("userStatus").innerText = users[username].status || "Utilisateur";
+
+            document.getElementById("userProfile").style.display = "block"; // ✅ Affiche le profil après connexion
+        }
+    } catch (error) {
+        console.error("Erreur lors du chargement du profil utilisateur :", error);
+    }
+    }
+
 
     async function checkCredentials() {
       try {
@@ -180,6 +203,7 @@ input {
 
           loadChatMessages();
           loadFiles();
+          showUserProfile(); // ✅ Afficher le profil après connexion
 
           if (users[username].role === "admin") {
             document.getElementById("adminPanel").style.display = "block";
