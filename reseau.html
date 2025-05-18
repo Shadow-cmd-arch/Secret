@@ -111,6 +111,11 @@ input {
       <input type="password" id="userPasswordInput" placeholder="Mot de passe">
       <button onclick="checkCredentials()">Connexion</button>
     </div>
+    <div id="bossDashboard" style="display: none;">
+        <h3>👑 Tableau de Bord Boss</h3>
+        <p><strong>Utilisateurs connectés :</strong></p>
+        <ul id="connectedUsers"></ul>
+    </div>
 
     <div id="adminPanel">
       <h2>Panel Administrateur</h2>
@@ -189,9 +194,32 @@ input {
         console.error("Erreur lors du chargement du profil utilisateur :", error);
     }
     }
+    async function showConnectedUsers() {
+    try {
+        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+        const data = await response.json();
+        let users = data.record.users || {};
+        const connectedUsersList = document.getElementById("connectedUsers");
+
+        connectedUsersList.innerHTML = ""; // Nettoyer la liste
+
+        Object.keys(users).forEach(username => {
+            if (sessionStorage.getItem(username) === "online") { // Vérifie la connexion
+                let userRole = users[username].status || 
+                               (users[username].role === "boss" ? "Boss" : 
+                                users[username].role === "admin" ? "Admin" : "Utilisateur");
+                                
+                connectedUsersList.innerHTML += `<li>${username} (${userRole})</li>`;
+            }
+        });
+    } catch (error) {
+        console.error("Erreur lors du chargement des utilisateurs connectés :", error);
+    }
+    }
+
 
     async function checkCredentials() {
-      try {
+    try {
         const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
         const data = await response.json();
         let users = data.record.users;
@@ -199,25 +227,37 @@ input {
         const userPassword = document.getElementById("userPasswordInput").value;
 
         if (users[username] && users[username].password === userPassword) {
-          sessionStorage.setItem("username", username);
-          document.getElementById("auth").style.display = "none";
-          // Affiche le partage de fichiers et le chat
-          document.getElementById("fileUpload").style.display = "block";
-          document.getElementById("chat").style.display = "block";
+            sessionStorage.setItem("username", username);
+            sessionStorage.setItem(username, "online"); // ✅ Marquer l'utilisateur comme connecté
+            document.getElementById("auth").style.display = "none";
+            document.getElementById("fileUpload").style.display = "block";
+            document.getElementById("chat").style.display = "block";
 
-          loadChatMessages();
-          loadFiles();
-          showUserProfile(); // ✅ Afficher le profil après connexion
+            loadChatMessages();
+            loadFiles();
+            showUserProfile();
 
-          if (users[username].role === "admin") {
-            document.getElementById("adminPanel").style.display = "block";
-          }
+            // ✅ Vérification pour les Boss : Affichage du tableau de bord + liste des utilisateurs connectés
+            if (users[username].role === "boss") {
+                document.getElementById("bossDashboard").style.display = "block"; 
+                showConnectedUsers(); // ✅ Charger la liste des utilisateurs connectés
+            }
+
+            // ✅ Vérification pour les Admins : Accès aux outils admin
+            if (users[username].role === "admin" || users[username].role === "boss") {
+                document.getElementById("adminPanel").style.display = "block"; 
+            }
+
+            // ✅ Vérification pour les Utilisateurs : Accès aux fonctionnalités de base uniquement
+            if (users[username].role === "user") {
+                document.getElementById("basicUserOptions").style.display = "block";
+            }
         } else {
-          alert("Identifiant ou mot de passe incorrect !");
+            alert("Identifiant ou mot de passe incorrect !");
         }
-      } catch (error) {
+    } catch (error) {
         console.error("Erreur de connexion :", error);
-      }
+    }
     }
 
     async function addUser() {
@@ -388,6 +428,9 @@ input {
     }
     // Actualisation automatique du chat toutes les 5 secondes
 setInterval(loadChatMessages, 5000);
+setInterval(showConnectedUsers, 5000);
+setInterval(loadFiles, 5000);
+setInterval(uploadFile, 5000);
   </script>
 </body>
 </html>
