@@ -157,8 +157,8 @@ input {
   </div>
 
   <script>
-    const apiKey = "$2a$10$UKPxpQ92qE5GOG4OwBqJIOGKcuJehawwtWUWXCv4zI/WhDUuW.9A6";
-    const jsonBinUrl = "https://api.jsonbin.io/v3/b/68286cc78960c979a59b4e80";
+    const supabaseUrl = "https://ejtqzrwyopijgstbvhyb.supabase.co";  // Remplace XXXX par ton projet Supabase
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqdHF6cnd5b3BpamdzdGJ2aHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1ODI4MjQsImV4cCI6MjA2MzE1ODgyNH0.z2NumrWkR4IbosI6E8ZilIUoc97iQnUGaqtjh-dDFdE";  // Mets ton API Key ici
 
     function checkGeneralPassword() {
       const password = document.getElementById("passwordInput").value;
@@ -171,167 +171,249 @@ input {
         alert("Mot de passe incorrect !");
       }
     }
-   async function showUserProfile() {
+async function showUserProfile() {
     try {
-        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-        const data = await response.json();
-        let users = data.record.users || {};
         const username = sessionStorage.getItem("username");
 
-        if (users[username]) {
-            document.getElementById("userName").innerText = username;
+        const { data, error } = await fetch(`${supabaseUrl}/rest/v1/users?username=eq.${username}`, {
+            headers: {
+                "apikey": supabaseKey,
+                "Authorization": `Bearer ${supabaseKey}`
+            }
+        }).then(res => res.json());
 
-            // Définir le statut selon le rôle
-            const userStatus = users[username].status || 
-                (users[username].role === "boss" ? "Boss" : 
-                 users[username].role === "admin" ? "Admin" : "Utilisateur");
-
-            document.getElementById("userStatus").innerText = userStatus;
-
-            document.getElementById("userProfile").style.display = "block"; 
+        if (!data.length) {
+            console.error("Utilisateur introuvable !");
+            return;
         }
+
+        const user = data[0];
+
+        document.getElementById("userName").innerText = username;
+
+        // Définir le statut selon le rôle
+        const userStatus = user.status || (user.role === "boss" ? "Boss" : 
+                                           user.role === "admin" ? "Admin" : "Utilisateur");
+
+        document.getElementById("userStatus").innerText = userStatus;
+        document.getElementById("userProfile").style.display = "block"; 
+
     } catch (error) {
         console.error("Erreur lors du chargement du profil utilisateur :", error);
     }
     }
-    async function showConnectedUsers() {
+
+async function showConnectedUsers() {
     try {
-        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-        const data = await response.json();
-        let users = data.record.users || {};
-        const connectedUsersList = document.getElementById("connectedUsers");
-
-        connectedUsersList.innerHTML = ""; // Nettoyer la liste
-
-        Object.keys(users).forEach(username => {
-            if (sessionStorage.getItem(username) === "online") { // Vérifie la connexion
-                let userRole = users[username].status || 
-                               (users[username].role === "boss" ? "Boss" : 
-                                users[username].role === "admin" ? "Admin" : "Utilisateur");
-                                
-                connectedUsersList.innerHTML += `<li>${username} (${userRole})</li>`;
+        const response = await fetch(`${supabaseUrl}/rest/v1/users?access=eq.online`, {
+            headers: {
+                "apikey": supabaseKey,
+                "Authorization": `Bearer ${supabaseKey}`
             }
         });
+
+        if (!response.ok) {
+            throw new Error(`Erreur Supabase: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || data.length === 0) {
+            console.warn("Aucun utilisateur connecté trouvé.");
+            return;
+        }
+
+        const connectedUsersList = document.getElementById("connectedUsers");
+        connectedUsersList.innerHTML = ""; // Nettoyer la liste
+
+        data.forEach(user => {
+            let userRole = user.status || (user.role === "boss" ? "Boss" : 
+                                           user.role === "admin" ? "Admin" : "Utilisateur");
+            connectedUsersList.innerHTML += `<li>${user.username} (${userRole})</li>`;
+        });
+
     } catch (error) {
         console.error("Erreur lors du chargement des utilisateurs connectés :", error);
+        alert(`Problème lors du chargement des utilisateurs connectés : ${error.message}`);
     }
     }
 
-
-    async function checkCredentials() {
+async function checkCredentials() {
     try {
-        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-        const data = await response.json();
-        let users = data.record.users;
         const username = document.getElementById("usernameInput").value;
         const userPassword = document.getElementById("userPasswordInput").value;
 
-        if (users[username] && users[username].password === userPassword) {
-            sessionStorage.setItem("username", username);
-            sessionStorage.setItem(username, "online"); // ✅ Marquer l'utilisateur comme connecté
-            document.getElementById("auth").style.display = "none";
-            document.getElementById("fileUpload").style.display = "block";
-            document.getElementById("chat").style.display = "block";
+        console.log("Tentative de connexion avec :", username, userPassword);
 
-            loadChatMessages();
-            loadFiles();
-            showUserProfile();
-
-            // ✅ Vérification pour les Boss : Affichage du tableau de bord + liste des utilisateurs connectés
-            if (users[username].role === "boss") {
-                document.getElementById("bossDashboard").style.display = "block"; 
-                showConnectedUsers(); // ✅ Charger la liste des utilisateurs connectés
+        const response = await fetch(`${supabaseUrl}/rest/v1/users?username=eq.${username}`, {
+            headers: {
+                "apikey": supabaseKey,  // ✅ Utilise bien la clé API ici
+                "Authorization": `Bearer ${supabaseKey}`
             }
+        });
 
-            // ✅ Vérification pour les Admins : Accès aux outils admin
-            if (users[username].role === "admin" || users[username].role === "boss") {
-                document.getElementById("adminPanel").style.display = "block"; 
-            }
+        console.log("Réponse brute :", response);
 
-            // ✅ Vérification pour les Utilisateurs : Accès aux fonctionnalités de base uniquement
-            if (users[username].role === "user") {
-                document.getElementById("basicUserOptions").style.display = "block";
-            }
-        } else {
-            alert("Identifiant ou mot de passe incorrect !");
+        if (!response.ok) {
+            throw new Error(`Erreur Supabase: ${response.statusText}`);
         }
+
+        const data = await response.json();
+        console.log("Données reçues :", data);
+
+        if (!data.length) {
+            alert("Identifiant incorrect !");
+            return;
+        }
+
+        const user = data[0];
+
+        if (user.password !== userPassword) {
+            alert("Mot de passe incorrect !");
+            return;
+        }
+
+        sessionStorage.setItem("username", username);
+        sessionStorage.setItem(username, "online");
+
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("fileUpload").style.display = "block";
+        document.getElementById("chat").style.display = "block";
+
+        loadChatMessages();
+        loadFiles();
+        showUserProfile();
+
+        if (user.role === "boss") {
+            document.getElementById("bossDashboard").style.display = "block";
+            showConnectedUsers();
+        }
+
+        if (user.role === "admin" || user.role === "boss") {
+            document.getElementById("adminPanel").style.display = "block";
+        }
+
+        if (user.role === "user") {
+            document.getElementById("basicUserOptions").style.display = "block";
+        }
+
     } catch (error) {
         console.error("Erreur de connexion :", error);
+        alert(`Problème de connexion : ${error.message}`);
     }
     }
 
-    async function addUser() {
-      const username = sessionStorage.getItem("username");
-      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-      const data = await response.json();
-      let users = data.record.users;
+async function addUser() {
+    const username = sessionStorage.getItem("username");
 
-      if (!users[username] || users[username].role !== "admin") {
+    // Vérifier si l'utilisateur est Admin ou Boss
+    const { data: userData, error: userError } = await fetch(`${supabaseUrl}/rest/v1/users?username=eq.${username}`, {
+        headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+        }
+    }).then(res => res.json());
+
+    if (!userData.length || (userData[0].role !== "admin" && userData[0].role !== "boss")) {
         alert("Seuls les administrateurs peuvent ajouter un utilisateur !");
         return;
-      }
+    }
 
-      const newUsername = document.getElementById("newUsername").value.trim();
-      const newUserPassword = document.getElementById("newUserPassword").value.trim();
-      const newUserRole = document.getElementById("newUserRole").value;
+    const newUsername = document.getElementById("newUsername").value.trim();
+    const newUserPassword = document.getElementById("newUserPassword").value.trim();
+    const newUserRole = document.getElementById("newUserRole").value;
 
-      if (!newUsername || !newUserPassword) {
+    if (!newUsername || !newUserPassword) {
         alert("Veuillez remplir tous les champs !");
         return;
-      }
-
-      users[newUsername] = { password: newUserPassword, role: newUserRole };
-      await updateStorage(users, data.record.chat, data.record.files);
-      alert("Utilisateur ajouté avec succès !");
     }
 
-    async function deleteUser() {
-      const username = sessionStorage.getItem("username");
-      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-      const data = await response.json();
-      let users = data.record.users;
+    const { data, error } = await fetch(`${supabaseUrl}/rest/v1/users`, {
+        method: "POST",
+        headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: newUsername,
+            password: newUserPassword,
+            role: newUserRole,
+            status: "Utilisateur",
+            access: "granted"
+        })
+    }).then(res => res.json());
 
-      if (!users[username] || users[username].role !== "admin") {
+    if (error) {
+        console.error("Erreur ajout utilisateur :", error);
+    } else {
+        alert("Utilisateur ajouté avec succès !");
+    }
+    }
+
+async function deleteUser() {
+    const username = sessionStorage.getItem("username");
+
+    // Vérifier si l'utilisateur est Admin ou Boss
+    const { data: userData, error: userError } = await fetch(`${supabaseUrl}/rest/v1/users?username=eq.${username}`, {
+        headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+        }
+    }).then(res => res.json());
+
+    if (!userData.length || (userData[0].role !== "admin" && userData[0].role !== "boss")) {
         alert("Seuls les administrateurs peuvent supprimer un utilisateur !");
         return;
-      }
-
-      const usernameToDelete = document.getElementById("deleteUsername").value.trim();
-      delete users[usernameToDelete];
-      await updateStorage(users, data.record.chat, data.record.files);
-      alert("Utilisateur supprimé !");
     }
 
-    async function deleteAllMessages() {
-      const username = sessionStorage.getItem("username");
-      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-      const data = await response.json();
-      let users = data.record.users;
+    const usernameToDelete = document.getElementById("deleteUsername").value.trim();
 
-      if (!users[username] || users[username].role !== "admin") {
-        alert("Seuls les administrateurs peuvent effacer le chat !");
-        return;
-      }
-      // On supprime seulement les messages, on conserve les utilisateurs et fichiers.
-      await updateStorage(users, [], data.record.files);
-      document.getElementById("messages").innerHTML = "";
-      alert("Messages supprimés !");
+    const { data, error } = await fetch(`${supabaseUrl}/rest/v1/users?username=eq.${usernameToDelete}`, {
+        method: "DELETE",
+        headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+        }
+    }).then(res => res.json());
+
+    if (error) {
+        console.error("Erreur suppression utilisateur :", error);
+    } else {
+        alert("Utilisateur supprimé !");
+    }
     }
 
-    async function deleteAllFiles() {
-      const username = sessionStorage.getItem("username");
-      const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-      const data = await response.json();
-      let users = data.record.users;
+async function deleteAllMessages() {
+    const username = sessionStorage.getItem("username");
 
-      if (!users[username] || users[username].role !== "admin") {
-        alert("Seuls les administrateurs peuvent effacer les fichiers partagés !");
+    // Vérifier si l'utilisateur est Admin ou Boss
+    const { data: userData, error: userError } = await fetch(`${supabaseUrl}/rest/v1/users?username=eq.${username}`, {
+        headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+        }
+    }).then(res => res.json());
+
+    if (!userData.length || (userData[0].role !== "admin" && userData[0].role !== "boss")) {
+        alert("Seuls les administrateurs peuvent supprimer les messages !");
         return;
-      }
-      // On supprime seulement les fichiers, on conserve les utilisateurs et messages.
-      await updateStorage(users, data.record.chat, []);
-      document.getElementById("fileList").innerHTML = "";
-      alert("Fichiers partagés supprimés !");
+    }
+
+    const { data, error } = await fetch(`${supabaseUrl}/rest/v1/messages`, {
+        method: "DELETE",
+        headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+        }
+    }).then(res => res.json());
+
+    if (error) {
+        console.error("Erreur suppression messages :", error);
+    } else {
+        document.getElementById("messages").innerHTML = "";
+        alert("Messages supprimés !");
+    }
     }
 
     async function uploadFile() {
@@ -355,85 +437,89 @@ input {
       document.getElementById("fileList").innerHTML = files.map(file => `<p><a href="${file.url}" download>${file.name}</a></p>`).join("");
     }
 
-    async function loadChatMessages() {
+async function loadChatMessages() {
     try {
-        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
-        const data = await response.json();
-        let chatMessages = data.record.chat || [];
-        let users = data.record.users || {};
+        const response = await fetch(`${supabaseUrl}/rest/v1/messages?order=timestamp.desc`, {
+            headers: {
+                "apikey": supabaseKey,
+                "Authorization": `Bearer ${supabaseKey}`
+            }
+        });
 
+        if (!response.ok) {
+            throw new Error(`Erreur Supabase: ${response.statusText}`);
+        }
+
+        const data = await response.json();
         const chatDiv = document.getElementById("messages");
         chatDiv.innerHTML = "";
 
-        chatMessages.forEach(msg => {
-            let userRole = users[msg.username]?.status || 
-                           (users[msg.username]?.role === "boss" ? "Boss" : 
-                            users[msg.username]?.role === "admin" ? "Admin" : "Utilisateur");
-
-            chatDiv.innerHTML += `<p class="message"><strong>${msg.username} (${userRole}):</strong> ${msg.message} 
-            <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+        data.forEach(msg => {
+            chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} 
+            <span style="font-size: 10px;">(${new Date(msg.timestamp).toLocaleString()})</span></p>`;
         });
+
     } catch (error) {
         console.error("Erreur lors du chargement des messages :", error);
+        alert(`Problème lors du chargement des messages : ${error.message}`);
     }
     }
 
-    async function updateStorage(users, chatMessages, files) {
-      try {
-        await fetch(jsonBinUrl, {
-          method: "PUT",
-          headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({ users, chat: chatMessages, files })
-        });
-      } catch (error) {
-        console.error("Erreur lors de la mise à jour du stockage :", error);
-      }
-    }
-    async function updateChatStorage(users, chatMessages, files) {
-    try {
-        await fetch(jsonBinUrl, {
-            method: "PUT",
-            headers: { 
-                "Content-Type": "application/json",
-                "X-Master-Key": apiKey 
-            },
-            body: JSON.stringify({ users, chat: chatMessages, files })
-        });
-    } catch (error) {
-        console.error("Erreur de mise à jour du chat :", error);
-        alert("Impossible de mettre à jour les messages !");
-    }
-    }
+    async function updateUserData(username, newData) {
+    const { data, error } = await fetch(`${supabaseUrl}/rest/v1/users?username=eq.${username}`, {
+        method: "PATCH", // ✅ Mise à jour au lieu de PUT
+        headers: {
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newData)
+    }).then(res => res.json());
 
-    async function sendMessage() {
+    if (error) {
+        console.error("Erreur mise à jour Supabase :", error);
+    } else {
+        console.log("Données mises à jour :", data);
+    }
+    }   
+
+async function sendMessage() {
     try {
         const message = document.getElementById("chatInput").value.trim();
         const username = sessionStorage.getItem("username");
-        const timestamp = new Date().toLocaleString();
 
         if (!message) {
             alert("Veuillez entrer un message !");
             return;
         }
 
-        const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
+        const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
+            method: "POST",
+            headers: {
+                "apikey": supabaseKey,
+                "Authorization": `Bearer ${supabaseKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                message: message,
+                timestamp: new Date().toISOString()
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur Supabase: ${response.statusText}`);
+        }
+
         const data = await response.json();
-        let chatMessages = data.record.chat || [];
-        let users = data.record.users || {};
+        console.log("Message envoyé :", data);
+        
+        loadChatMessages(); // ✅ Recharge le chat automatiquement
 
-        // Récupérer le rôle de l'utilisateur
-        let userRole = users[username]?.status || 
-                       (users[username]?.role === "admin" ? "Admin" : "Utilisateur");
-
-        chatMessages.push({ username, message, timestamp, role: userRole });
-
-        await updateChatStorage(users, chatMessages, data.record.adminChat, data.record.files);
-        loadChatMessages();
-
-        document.getElementById("chatInput").value = ""; 
+        document.getElementById("chatInput").value = "";
     } catch (error) {
         console.error("Erreur lors de l'envoi du message :", error);
-        alert("Une erreur est survenue, veuillez réessayer !");
+        alert(`Problème lors de l'envoi : ${error.message}`);
     }
     }
 
