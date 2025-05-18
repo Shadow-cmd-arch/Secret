@@ -389,6 +389,21 @@ input {
         console.error("Erreur lors de la mise à jour du stockage :", error);
       }
     }
+    async function updateChatStorage(users, chatMessages, files) {
+    try {
+        await fetch(jsonBinUrl, {
+            method: "PUT",
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Master-Key": apiKey 
+            },
+            body: JSON.stringify({ users, chat: chatMessages, files })
+        });
+    } catch (error) {
+        console.error("Erreur de mise à jour du chat :", error);
+        alert("Impossible de mettre à jour les messages !");
+    }
+    }
 
     async function sendMessage() {
     try {
