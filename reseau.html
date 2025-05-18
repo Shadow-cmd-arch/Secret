@@ -166,25 +166,30 @@ input {
         alert("Mot de passe incorrect !");
       }
     }
-    async function showUserProfile() {
+   async function showUserProfile() {
     try {
         const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
         const data = await response.json();
-        let users = data.record.users;
+        let users = data.record.users || {};
         const username = sessionStorage.getItem("username");
 
         // Vérifier si l'utilisateur est bien connecté
         if (users[username]) {
             document.getElementById("userName").innerText = username;
-            document.getElementById("userStatus").innerText = users[username].status || "Utilisateur";
 
-            document.getElementById("userProfile").style.display = "block"; // ✅ Affiche le profil après connexion
+            // Définir le statut selon les données ou le rôle
+            const userStatus = users[username].status || 
+                (users[username].role === "admin" ? "Admin" : "Utilisateur");
+
+            document.getElementById("userStatus").innerText = userStatus;
+
+            // Afficher le profil après connexion
+            document.getElementById("userProfile").style.display = "block"; 
         }
     } catch (error) {
         console.error("Erreur lors du chargement du profil utilisateur :", error);
     }
     }
-
 
     async function checkCredentials() {
       try {
