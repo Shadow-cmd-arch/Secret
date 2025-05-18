@@ -173,17 +173,16 @@ input {
         let users = data.record.users || {};
         const username = sessionStorage.getItem("username");
 
-        // Vérifier si l'utilisateur est bien connecté
         if (users[username]) {
             document.getElementById("userName").innerText = username;
 
-            // Définir le statut selon les données ou le rôle
+            // Définir le statut selon le rôle
             const userStatus = users[username].status || 
-                (users[username].role === "admin" ? "Admin" : "Utilisateur");
+                (users[username].role === "boss" ? "Boss" : 
+                 users[username].role === "admin" ? "Admin" : "Utilisateur");
 
             document.getElementById("userStatus").innerText = userStatus;
 
-            // Afficher le profil après connexion
             document.getElementById("userProfile").style.display = "block"; 
         }
     } catch (error) {
@@ -328,7 +327,8 @@ input {
 
         chatMessages.forEach(msg => {
             let userRole = users[msg.username]?.status || 
-                           (users[msg.username]?.role === "admin" ? "Admin" : "Utilisateur");
+                           (users[msg.username]?.role === "boss" ? "Boss" : 
+                            users[msg.username]?.role === "admin" ? "Admin" : "Utilisateur");
 
             chatDiv.innerHTML += `<p class="message"><strong>${msg.username} (${userRole}):</strong> ${msg.message} 
             <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
@@ -336,17 +336,6 @@ input {
     } catch (error) {
         console.error("Erreur lors du chargement des messages :", error);
     }
-    }
-    async function updateChatStorage(users, chatMessages, files) {
-      try {
-        await fetch(jsonBinUrl, {
-          method: "PUT",
-          headers: { "X-Master-Key": apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({ users, chat: chatMessages, files })
-        });
-      } catch (error) {
-        console.error("Erreur lors de la mise à jour du stockage des messages :", error);
-      }
     }
 
     async function updateStorage(users, chatMessages, files) {
