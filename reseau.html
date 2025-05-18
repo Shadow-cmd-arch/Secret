@@ -317,25 +317,26 @@ input {
     }
 
     async function loadChatMessages() {
-      try {
+    try {
         const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
         const data = await response.json();
         let chatMessages = data.record.chat || [];
-        // Afficher, par exemple, seulement les 10 derniers messages
-        chatMessages = chatMessages.slice(-10);
+        let users = data.record.users || {};
 
         const chatDiv = document.getElementById("messages");
         chatDiv.innerHTML = "";
-        chatMessages.forEach(msg => {
-          chatDiv.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message} <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
-        });
-        // On met à jour le stockage pour être certain que les messages affichés sont enregistrés
-        await updateChatStorage(data.record.users, chatMessages, data.record.files);
-      } catch (error) {
-        console.error("Erreur lors du chargement des messages :", error);
-      }
-    }
 
+        chatMessages.forEach(msg => {
+            let userRole = users[msg.username]?.status || 
+                           (users[msg.username]?.role === "admin" ? "Admin" : "Utilisateur");
+
+            chatDiv.innerHTML += `<p class="message"><strong>${msg.username} (${userRole}):</strong> ${msg.message} 
+            <span style="font-size: 10px;">(${msg.timestamp})</span></p>`;
+        });
+    } catch (error) {
+        console.error("Erreur lors du chargement des messages :", error);
+    }
+    }
     async function updateChatStorage(users, chatMessages, files) {
       try {
         await fetch(jsonBinUrl, {
@@ -371,24 +372,26 @@ input {
             return;
         }
 
-        // Récupérer les messages existants
         const response = await fetch(jsonBinUrl, { headers: { "X-Master-Key": apiKey } });
         const data = await response.json();
         let chatMessages = data.record.chat || [];
+        let users = data.record.users || {};
 
-        // Ajouter le nouveau message à la liste
-        chatMessages.push({ username, message, timestamp });
+        // Récupérer le rôle de l'utilisateur
+        let userRole = users[username]?.status || 
+                       (users[username]?.role === "admin" ? "Admin" : "Utilisateur");
 
-        // Mettre à jour le stockage des messages
-        await updateChatStorage(data.record.users, chatMessages, data.record.files);
-        loadChatMessages(); // Recharger l'affichage du chat
+        chatMessages.push({ username, message, timestamp, role: userRole });
 
-        document.getElementById("chatInput").value = ""; // Nettoyer le champ de saisie
+        await updateChatStorage(users, chatMessages, data.record.adminChat, data.record.files);
+        loadChatMessages();
+
+        document.getElementById("chatInput").value = ""; 
     } catch (error) {
         console.error("Erreur lors de l'envoi du message :", error);
         alert("Une erreur est survenue, veuillez réessayer !");
     }
-}
+    }
 
     function logout() {
       sessionStorage.removeItem("username");
